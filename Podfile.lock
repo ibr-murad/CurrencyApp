@@ -1,0 +1,20 @@
+PODS:
+  - Reveal-SDK (26)
+  - SnapKit (4.2.0)
+
+DEPENDENCIES:
+  - Reveal-SDK
+  - SnapKit (= 4.2.0)
+
+SPEC REPOS:
+  trunk:
+    - Reveal-SDK
+    - SnapKit
+
+SPEC CHECKSUMS:
+  Reveal-SDK: 5f94f14aff3d5f2a49f246edcd266fa4472679e9
+  SnapKit: fe8a619752f3f27075cc9a90244d75c6c3f27e2a
+
+PODFILE CHECKSUM: c165ce3522e778d2986338e8c2e230f140ae487a
+
+COCOAPODS: 1.9.3
