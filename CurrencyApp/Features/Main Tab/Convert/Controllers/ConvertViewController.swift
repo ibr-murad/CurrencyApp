@@ -32,6 +32,8 @@ class ConvertViewController: UIViewController {
     
     private lazy var topCurrencyView: UIView = {
         var view = UIView()
+        let tap = UITapGestureRecognizer(target: self, action: #selector(self.topViewTapped))
+        view.addGestureRecognizer(tap)
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -310,6 +312,13 @@ class ConvertViewController: UIViewController {
         self.animateViewsOnChangeButtomTapped()
     }
     
+    @objc private func topViewTapped() {
+        let currenciesVC = CurrenciesViewController()
+        currenciesVC.modalPresentationStyle = .custom
+        currenciesVC.transitioningDelegate = self
+        self.present(currenciesVC, animated: true, completion: nil)
+    }
+    
     @objc private func footerFloatButtonTapped(_ sender: UIButton) {
         sender.tapAnimation {
             
@@ -330,7 +339,7 @@ class ConvertViewController: UIViewController {
         let total = value * self.currentMultilier
         let totalStr = String(format: "%0.2f", total)
         UIView.transition(with: self.bottomValueLabel,
-                          duration: 0.5,
+                          duration: 0.1,
                           options: .transitionCrossDissolve) { [weak self] in
             self?.bottomValueLabel.text = totalStr
         }
@@ -402,3 +411,8 @@ class ConvertViewController: UIViewController {
     
 }
 
+extension ConvertViewController: UIViewControllerTransitioningDelegate {
+    func presentationController(forPresented presented: UIViewController, presenting: UIViewController?, source: UIViewController) -> UIPresentationController? {
+        CurrenciesPresentationController(presentedViewController: presented, presenting: presenting)
+    }
+}

@@ -41,7 +41,9 @@ extension UIView {
         self.layer.insertSublayer(gradientLayer, at: 0)
     }
     
-    func dropShadow(color: UIColor, opacity: Float = 0.5, offSet: CGSize, radius: CGFloat = 1, scale: Bool = true) {
+    func dropShadow(color: UIColor, opacity: Float = 1,
+                    offSet: CGSize, radius: CGFloat = 1,
+                    scale: Bool = true, bounds: CGRect? = nil) {
         
         self.layer.masksToBounds = false
         self.layer.shadowColor = color.cgColor
@@ -49,11 +51,25 @@ extension UIView {
         self.layer.shadowOffset = offSet
         self.layer.shadowRadius = radius
         
-        self.layer.shadowPath = UIBezierPath(
-            roundedRect: self.bounds,
-            cornerRadius: self.layer.cornerRadius).cgPath
+        if let bounds = bounds {
+            self.layer.shadowPath = UIBezierPath(
+                roundedRect: bounds,
+                cornerRadius: self.layer.cornerRadius).cgPath
+        } else {
+            self.layer.shadowPath = UIBezierPath(
+                roundedRect: self.bounds,
+                cornerRadius: self.layer.cornerRadius).cgPath
+        }
         self.layer.shouldRasterize = true
         self.layer.rasterizationScale = scale ? UIScreen.main.scale : 1
+    }
+    
+    func roundedCorners(_ corners: UIRectCorner, radius: CGFloat) {
+        let path = UIBezierPath(roundedRect: self.bounds, byRoundingCorners: corners,
+                                cornerRadii: CGSize(width: radius, height: radius))
+        let mask = CAShapeLayer()
+        mask.path = path.cgPath
+        self.layer.mask = mask
     }
     
 }

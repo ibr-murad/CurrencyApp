@@ -9,10 +9,6 @@ import UIKit
 
 class OnboardingCurrencyView: UIView {
     
-    //MARK: - Public variables
-    
-    //MARK: - Private variables
-    
     //MARK: - GUI variables
     
     private lazy var firstItem: OnboardingCurrencyItemView = {
@@ -109,18 +105,21 @@ class OnboardingCurrencyView: UIView {
         self.firstItem.highlighted()
         self.secondItem.normal()
         self.thirdItem.normal()
+        Settings.shared.currentCurrencyName = "RUB"
     }
     
     @objc private func secondItemTapped() {
         self.firstItem.normal()
         self.secondItem.highlighted()
         self.thirdItem.normal()
+        Settings.shared.currentCurrencyName = "USD"
     }
     
     @objc private func thirdItemTapped() {
         self.firstItem.normal()
         self.secondItem.normal()
         self.thirdItem.highlighted()
+        Settings.shared.currentCurrencyName = "EUR"
     }
     
 }

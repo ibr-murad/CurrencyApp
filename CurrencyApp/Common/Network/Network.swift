@@ -48,4 +48,19 @@ class Network {
         }.resume()
     }
     
+    func testRequest<T: Codable>(completion: @escaping (Result<T, NetworkError>) -> ()) {
+        
+        
+        guard let path = Bundle.main.path(forResource: "test", ofType: "json") else { return }
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .seconds(3)) {
+            if let data = try? Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe),
+               let result = try? JSONDecoder().decode(T.self, from: data) {
+                completion(.success(result))
+            } else {
+                completion(.failure(.parsing))
+            }
+        }
+    }
+    
+    
 }

@@ -25,7 +25,7 @@ class CurrencyItemView: UIView {
     private lazy var descriptionLabel: UILabel = {
         var label = UILabel()
         label.text = "1 RUB"
-        label.font = .systemFont(ofSize: 24, weight: .semibold)
+        label.font = .systemFont(ofSize: 20, weight: .bold)
         label.textAlignment = .left
         label.numberOfLines = 1
         label.textColor = Colors.textBlackHight.color()
@@ -75,6 +75,12 @@ class CurrencyItemView: UIView {
     func setColor(_ colors: [UIColor]) {
         self.titleLabel.textColor = colors[0]
         self.descriptionLabel.textColor = colors[1]
+        
+        self.layoutIfNeeded()
+    }
+    
+    func setFont(_ font: UIFont) {
+        self.descriptionLabel.font = font
         
         self.layoutIfNeeded()
     }

@@ -15,7 +15,7 @@ class CurrencyView: UIView {
     
     private lazy var firstLabel:  UILabel = {
         var label = UILabel()
-        label.text = "1 RUB  → "
+        label.text = "----"
         label.font = .systemFont(ofSize: 24, weight: .semibold)
         label.textAlignment = .left
         label.numberOfLines = 1
@@ -26,7 +26,7 @@ class CurrencyView: UIView {
 
     private lazy var secondLabel: UILabel = {
         var label = UILabel()
-        label.text = "0.1380 TJS"
+        label.text = "----"
         label.font = .systemFont(ofSize: 24, weight: .semibold)
         label.textAlignment = .left
         label.numberOfLines = 1
@@ -39,25 +39,39 @@ class CurrencyView: UIView {
     
     private lazy var firstItem: CurrencyItemView = {
         var view = CurrencyItemView()
-        view.initView("Валюта", "1 RUB  →")
+        view.initView("Валюта", "---")
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
     private lazy var secondItem: CurrencyItemView = {
         var view = CurrencyItemView()
-        view.initView("Покупка", "0.1350")
+        view.initView("Покупка", "---")
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
     private lazy var thirdItem: CurrencyItemView = {
         var view = CurrencyItemView()
-        view.initView("Продажа", "0.1380")
+        view.initView("Продажа", "---")
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
+    private lazy var arrorwImageContainerView: UIView = {
+        var view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+
+    private lazy var arrorwImageView: UIImageView = {
+        var imageView = UIImageView()
+        imageView.contentMode = .center
+        imageView.image = UIImage(named: "arrow")
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+
     //MARK: - Initialization
     
     override init(frame: CGRect) {
@@ -77,6 +91,17 @@ class CurrencyView: UIView {
         self.addSubviews()
     }
     
+    func initView(model: CurrencyModel) {
+        self.firstItem.initView("Валюта", "1 " + model.name)
+        self.secondItem.initView("Покупка", model.buy)
+        self.thirdItem.initView("Продажа", model.sell)
+        
+        self.firstLabel.text = "1 " + model.name
+        self.secondLabel.text = model.buy + "TJS"
+        
+        self.setNeedsUpdateConstraints()
+    }
+    
     //MARK: - Constraints
     
     override func updateConstraints() {
@@ -85,20 +110,40 @@ class CurrencyView: UIView {
             make.centerY.equalToSuperview()
         }
         self.secondLabel.snp.updateConstraints { (make) in
-            make.left.greaterThanOrEqualTo(self.firstLabel.snp.right).offset(20)
+            make.left.greaterThanOrEqualTo(self.firstLabel.snp.right).offset(10)
             make.centerY.equalToSuperview()
         }
+        
         self.firstItem.snp.updateConstraints { (make) in
             make.top.left.bottom.equalToSuperview()
         }
         self.secondItem.snp.updateConstraints { (make) in
             make.top.bottom.equalToSuperview()
-            make.left.greaterThanOrEqualTo(self.firstItem.snp.right).offset(20)
+            make.width.equalTo(80).priority(700)
         }
         self.thirdItem.snp.updateConstraints { (make) in
-            make.top.bottom.right.equalToSuperview()
-            make.left.equalTo(self.secondItem.snp.right).offset(30)
+            make.top.right.bottom.equalToSuperview()
+            make.left.equalTo(self.secondItem.snp.right).offset(24)
+            make.width.equalTo(80).priority(700)
         }
+        
+        self.arrorwImageContainerView.snp.remakeConstraints { (make) in
+            if Settings.shared.mode == .plain {
+                make.left.equalTo(self.firstLabel.snp.right).offset(40)
+                make.right.equalTo(self.secondLabel.snp.left).offset(-40)
+                make.centerY.equalTo(self.firstLabel.snp.centerY)
+            } else {
+                make.left.equalTo(self.firstItem.snp.right)
+                make.right.equalTo(self.secondItem.snp.left)
+                make.bottom.equalToSuperview()
+            }
+        }
+        self.arrorwImageView.snp.remakeConstraints { (make) in
+            make.top.bottom.equalToSuperview()
+            make.centerX.equalToSuperview()
+            make.size.equalTo(CGSize(width: 28, height: 22))
+        }
+
         super.updateConstraints()
     }
     
@@ -107,9 +152,13 @@ class CurrencyView: UIView {
     private func addSubviews() {
         self.addSubview(self.firstLabel)
         self.addSubview(self.secondLabel)
+        
         self.addSubview(self.firstItem)
         self.addSubview(self.secondItem)
         self.addSubview(self.thirdItem)
+        
+        self.addSubview(self.arrorwImageContainerView)
+        self.arrorwImageContainerView.addSubview(self.arrorwImageView)
     }
     
     func setColor(_ colors: [UIColor]) {
@@ -118,13 +167,20 @@ class CurrencyView: UIView {
         self.firstItem.setColor(colors)
         self.secondItem.setColor(colors)
         self.thirdItem.setColor(colors)
+        let coloredImage = self.arrorwImageView.image?.with(color: colors[1])
+        self.arrorwImageView.image = coloredImage
+    }
+    
+    func setFont(_ font: UIFont) {
+        self.firstItem.setFont(font)
+        self.secondItem.setFont(font)
+        self.thirdItem.setFont(font)
     }
     
     //MARK: - Helpers
     
     @objc private func modeUpdated() {
-        let isPlainMode = UserDefaults.standard.bool(forKey: "isPlainMode")
-        if isPlainMode {
+        if Settings.shared.mode == .plain {
             self.firstLabel.isHidden = false
             self.secondLabel.isHidden = false
             self.firstItem.isHidden = true
@@ -137,6 +193,7 @@ class CurrencyView: UIView {
             self.secondItem.isHidden = false
             self.thirdItem.isHidden = false
         }
+        self.setNeedsUpdateConstraints()
     }
     
 }

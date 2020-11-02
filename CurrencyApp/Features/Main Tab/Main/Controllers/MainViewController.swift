@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import Windless
 
 class MainViewController: BaseViewController {
     
@@ -14,7 +15,9 @@ class MainViewController: BaseViewController {
     
     //MARK: - Private variables
     
-    private var data: [String] = Array.init(repeating: "Item", count: 7)
+    private var viewModel = MainControllerViewModel()
+    private var isRequestBusy: Bool = false
+    private var isDataLoaded: Bool = false
     
     //MARK: - GUI variables
     
@@ -28,7 +31,7 @@ class MainViewController: BaseViewController {
     }()
     
     private lazy var headerView: MainHeaderView = {
-        var view = MainHeaderView(color: .green)
+        var view = MainHeaderView()
         let tap = UITapGestureRecognizer(target: self, action: #selector(self.headerViewTapped))
         view.addGestureRecognizer(tap)
         view.tag = 1
@@ -43,6 +46,8 @@ class MainViewController: BaseViewController {
         tableView.separatorStyle = .none
         tableView.estimatedRowHeight = 170
         tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedSectionHeaderHeight = 300
+        tableView.sectionHeaderHeight = UITableView.automaticDimension
         tableView.showsVerticalScrollIndicator = false
         if #available(iOS 10.0, *) {
             tableView.refreshControl = self.refreshControl
@@ -62,7 +67,6 @@ class MainViewController: BaseViewController {
         return refresh
     }()
 
-    
     //MARK: - View life cycle
     
     override func viewDidLoad() {
@@ -75,7 +79,7 @@ class MainViewController: BaseViewController {
         self.addSubviews()
         self.makeConstraints()
         self.addObservers()
-        self.loadData()
+        self.startLoad()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -117,7 +121,7 @@ class MainViewController: BaseViewController {
     
     private func addObservers() {
         NotificationCenter.default.addObserver(
-            self, selector: #selector(self.headerConvertButtonTapped(_:)),
+            self, selector: #selector(self.headerConvertButtonTapped),
             name: .headerConvertButtonTapped, object: nil)
     }
     
@@ -130,7 +134,7 @@ class MainViewController: BaseViewController {
     
     @objc private func refreshControlValueChanged(_ sender: UIRefreshControl) {
         sender.beginRefreshing()
-        self.loadData()
+        self.startLoad()
     }
     
     @objc private func settingsBarButtonTapped(_ sender: UIButton) {
@@ -145,7 +149,7 @@ class MainViewController: BaseViewController {
         }
     }
     
-    @objc private func headerConvertButtonTapped(_ notification: Notification) {
+    @objc private func headerConvertButtonTapped() {
         let convertController = ConvertViewController()
         let navController = UINavigationController(rootViewController: convertController)
         self.present(navController, animated: true, completion: nil)
@@ -156,33 +160,49 @@ class MainViewController: BaseViewController {
     
     //MARK: - Network
     
-    private func loadData() {
-        print("begin loading...")
-            /*Network.shared.request(url: "") { (response: Result<[TestModel], NetworkError>) in
+    private func fetchData() {
+        Network.shared.testRequest { [weak self] (response: Result<[BankRatesModel], NetworkError>) in
+            guard let self = self else { return }
             switch response {
             case .success(let models):
-                models.forEach {
-                    print($0.id)
-                }
+                self.viewModel = MainControllerViewModel(models: models)
                 break
             case .failure(let error):
                 print(error)
                 break
             }
-            self.refreshControl.endRefreshing()
-            print("end loading...")
-        }*/
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .seconds(4)) {
-            [weak self] in
-            guard let self = self else { return }
-            self.refreshControl.endRefreshing()
-            //self.headerView.setColor(color: .red)
-            print("end loading...")
+            self.endLoading()
         }
-
     }
 
     //MARK: - Helpers
+    
+    private func startLoad() {
+        guard !self.isRequestBusy else {
+            self.refreshControl.endRefreshing()
+            return
+        }
+        self.tableView.windless
+            .apply {
+                $0.beginTime = 0.5
+                $0.duration = 1.5
+                $0.animationLayerOpacity = 0.2
+            }.start()
+        self.isRequestBusy = true
+        self.isDataLoaded = false
+        self.fetchData()
+    }
+    
+    private func endLoading() {
+        if let bestRateModel = self.viewModel.bestBank {
+            self.headerView.initView(viewModel: bestRateModel)
+        }
+        self.isRequestBusy = false
+        self.isDataLoaded = true
+        self.tableView.windless.end()
+        self.tableView.reloadData()
+        self.refreshControl.endRefreshing()
+    }
     
     private func showActionSheet(for bankWithId: String) {//cellAtIndexPath: IndexPath) {
         let bankName = "Bank \(bankWithId)"
@@ -213,14 +233,20 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.data.count
+        if self.isDataLoaded {
+            return self.viewModel.banks.count
+        }
+        return 5
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: MainTableViewCell.reuseIdentifier, for: indexPath)
-        (cell as? MainTableViewCell)?.initCell(bankID: "Bank \(indexPath.row)")
-        (cell as? MainTableViewCell)?.deteailSelected = { [weak self] id in
-            self?.showActionSheet(for: id)
+        if self.isDataLoaded {
+            let viewModel = self.viewModel.banks[indexPath.row]
+            (cell as? MainTableViewCell)?.initCell(viewModel: viewModel)
+            (cell as? MainTableViewCell)?.deteailSelected = { [weak self] id in
+                self?.showActionSheet(for: id)
+            }
         }
         return cell
     }

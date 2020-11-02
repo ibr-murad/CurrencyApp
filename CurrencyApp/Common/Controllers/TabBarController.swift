@@ -19,18 +19,16 @@ class TabBarController: UITabBarController {
         return controller
     }()
 
-    private lazy var categoryTab: SecondViewController = {
-        let controller = SecondViewController()
-        controller.view.backgroundColor = .blue
+    private lazy var nbtTab: NBTViewController = {
+        let controller = NBTViewController()
         controller.tabBarItem = UITabBarItem(
-            title: "НБТ",
+            title: "Курсы от НБТ",
             image: UIImage(named: "share"), tag: 1)
         return controller
     }()
 
-    private lazy var searchTab: BaseViewController = {
-        let controller = BaseViewController()
-        controller.view.backgroundColor = .red
+    private lazy var convertTab: NBTViewController = {
+        let controller = NBTViewController()
         controller.tabBarItem = UITabBarItem(
             title: "Обмен валют",
             image: UIImage(named: "share"), tag: 2)
@@ -42,7 +40,7 @@ class TabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let tabs = [self.mainTab, self.categoryTab, self.searchTab]
+        let tabs = [self.mainTab, self.nbtTab, self.convertTab]
         self.viewControllers = tabs.map { UINavigationController(rootViewController: $0)}
         self.tabBarStyle()
     }

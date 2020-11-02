@@ -13,12 +13,12 @@ class MainHeaderView: UIView {
     //MARK: - Private variables
     
     private var isContainerHaveBackground = false
-    private var gradientColors: [UIColor] = []
     
     //MARK: - GUI variables
     
     private lazy var containerView: UIView = {
         var view = UIView()
+        view.backgroundColor = .white
         view.layer.cornerRadius = 16
         view.clipsToBounds = true
         view.tag = 11
@@ -28,6 +28,7 @@ class MainHeaderView: UIView {
     
     private lazy var logoImageView: UIImageView = {
         var imageView = UIImageView()
+        imageView.isWindlessable = true
         imageView.contentMode = .scaleAspectFill
         imageView.image = UIImage(named: "humoWhite")
         imageView.tag = 22
@@ -53,10 +54,11 @@ class MainHeaderView: UIView {
 
     private lazy var titleLabel: UILabel = {
         var label = UILabel()
+        label.isWindlessable = true
         label.text = "Самый выгодный курс по переводам"
         label.textColor = .white
         label.font = .systemFont(ofSize: 16, weight: .medium)
-        label.textAlignment = .center
+        label.textAlignment = .left
         label.numberOfLines = 1
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -71,7 +73,9 @@ class MainHeaderView: UIView {
     
     private lazy var currencyView: CurrencyView = {
         var view = CurrencyView()
+        view.isWindlessable = true
         view.setColor([UIColor.white.withAlphaComponent(0.8), .white])
+        view.setFont(.systemFont(ofSize: 20, weight: .bold))
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -85,6 +89,7 @@ class MainHeaderView: UIView {
     
     private lazy var convertButton: UIButton = {
         var button = UIButton(type: .custom)
+        button.isWindlessable = true
         button.setTitle("Ковертировать по этому курсу", for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 14, weight: .regular)
@@ -94,6 +99,12 @@ class MainHeaderView: UIView {
         button.addTarget(self, action: #selector(self.convertButtonTapped(_:)), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
+    }()
+    
+    private lazy var name: UILabel = {
+        var label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
     }()
     
     //MARK: - Initialization
@@ -110,17 +121,23 @@ class MainHeaderView: UIView {
         self.addSubviews()
     }
     
-    convenience init(color: UIColor) {
-        self.init(frame: .zero)
+    func initView(viewModel: BankRatesViewModel) {
+        for i in 0..<viewModel.currency.count {
+            if viewModel.currency[i].name == Settings.shared.currentCurrencyName {
+                self.currencyView.initView(model: viewModel.currency[i])
+                break
+            }
+        }
+        //self.name.text = viewModel.name
         
-        self.gradientColors = [color, color.withAlphaComponent(50)]
+        self.setNeedsUpdateConstraints()
     }
     
     override func layoutSubviews() {
         super.layoutSubviews()
         
         if !self.isContainerHaveBackground {
-            self.setupContainerViewBackground()
+            self.updateGradientAndShadowColor()
         }
     }
     
@@ -132,6 +149,7 @@ class MainHeaderView: UIView {
         }
         self.logoImageView.snp.updateConstraints { (make) in
             make.top.left.equalToSuperview().inset(20)
+            make.width.greaterThanOrEqualTo(50)
         }
         self.shareButton.snp.updateConstraints { (make) in
             make.right.equalToSuperview().inset(20)
@@ -154,7 +172,7 @@ class MainHeaderView: UIView {
         }
         self.currencyView.snp.updateConstraints { (make) in
             make.top.equalTo(self.lineView2.snp.bottom).offset(20)
-            make.centerX.equalToSuperview()
+            make.left.right.equalToSuperview().inset(20)
         }
         self.lineView3.snp.updateConstraints { (make) in
             make.top.equalTo(self.currencyView.snp.bottom).offset(20)
@@ -162,10 +180,13 @@ class MainHeaderView: UIView {
             make.height.equalTo(1)
         }
         self.convertButton.snp.updateConstraints { (make) in
-            make.top.equalTo(self.lineView3.snp.bottom).offset(30)
-            make.left.right.equalToSuperview().inset(20)
-            make.bottom.equalToSuperview().inset(30)
+            make.top.equalTo(self.lineView3.snp.bottom).offset(20)
+            make.left.right.bottom.equalToSuperview().inset(20)
             make.height.equalTo(40)
+        }
+        self.name.snp.updateConstraints { (make) in
+            make.top.equalToSuperview()
+            make.centerX.equalToSuperview()
         }
         super.updateConstraints()
     }
@@ -190,24 +211,23 @@ class MainHeaderView: UIView {
         self.containerView.addSubview(self.currencyView)
         self.containerView.addSubview(self.lineView3)
         self.containerView.addSubview(self.convertButton)
+        self.containerView.addSubview(self.name)
         
         self.setNeedsUpdateConstraints()
     }
     
-    private func setupContainerViewBackground() {
+    func updateGradientAndShadowColor() {
+        let model = UserDefaults.standard.getCurrentTopColorModel()
         let gradientRect = self.containerView.bounds
-        let gradienColors: [UIColor] = [.init(rgb: 0xDE5000, alpha: 1), .init(rgb: 0xFC8D26, alpha: 1)]
-        self.containerView.setGradient(rect: gradientRect, colors: gradienColors)
-        self.containerView.dropShadow(
-            color: .init(rgb: 0xFB8B25, alpha: 0.52),
-            opacity: 1, offSet: .init(width: 0, height: 8), radius: 20)
-        self.isContainerHaveBackground = true
-    }
-    
-    func setColor(gradient colors: [UIColor], shadow color: UIColor) {
-        if let gradientLayer = self.containerView.layer.sublayers?[0] as? CAGradientLayer {
-            gradientLayer.colors = colors
+        var gradientColors: [UIColor] = []
+        for color in model.gradientColors {
+            gradientColors.append(UIColor(rgb: color, alpha: 1.0))
         }
+        let shadowColor = UIColor(rgb: model.shadowColor, alpha: 1.0)
+        self.containerView.setGradient(rect: gradientRect, colors: gradientColors)
+        self.containerView.dropShadow(
+            color: shadowColor,opacity: 0.6, offSet: .init(width: 0, height: 8), radius: 10)
+        self.isContainerHaveBackground = true
     }
     
 }

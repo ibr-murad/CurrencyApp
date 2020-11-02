@@ -16,6 +16,10 @@ class HeaderDetailViewController: UIViewController {
     private let identifier = "HeaderDetailTableViewCell"
     private var navigationBarBackgroundImage: UIImage?
     private var isSwipeAnimationEnded: Bool = true
+    private let defaultGradientColors: [UIColor] = [
+        .init(rgb: 0xDE5000, alpha: 1),
+        .init(rgb: 0xFC8D26, alpha: 1)]
+    private let defaultShadowColor: UIColor = .init(rgb: 0xFB8B25, alpha: 0.52)
     
     //MARK: - GUI variables
     
@@ -82,6 +86,10 @@ class HeaderDetailViewController: UIViewController {
         self.makeConstraints()
     }
 
+    @objc func notifi() {
+        print("notifi")
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
@@ -100,11 +108,8 @@ class HeaderDetailViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         
-        if self.isSwipeAnimationEnded {
-            self.topContainerView.setGradient(
-                rect: self.topContainerView.bounds,
-                colors: [.init(rgb: 0xDE5000, alpha: 1), .init(rgb: 0xFC8D26, alpha: 1)])
-        }
+        self.updateGradientAndShadowColor(
+            gradient: self.defaultGradientColors, shadow: self.defaultShadowColor)
     }
     
     //MARK: - Constraints
@@ -129,13 +134,13 @@ class HeaderDetailViewController: UIViewController {
     private func addSubviews() {
         self.view.addSubview(self.tableView)
         self.view.addSubview(self.topContainerView)
-        self.topContainerView.addSubview(topView)
+        self.topContainerView.addSubview(self.topView)
     }
     
-    private func setupTopViewBackground() {
+    func updateGradientAndShadowColor(gradient colors: [UIColor], shadow color: UIColor) {
         let gradientRect = self.topContainerView.bounds
-        let gradienColors: [UIColor] = [.init(rgb: 0xDE5000, alpha: 1), .init(rgb: 0xFC8D26, alpha: 1)]
-        self.topContainerView.setGradient(rect: gradientRect, colors: gradienColors)
+        self.topContainerView.setGradient(rect: gradientRect, colors: colors)
+        self.topContainerView.dropShadow(color: color, offSet: .init(width: 0, height: 8), radius: 20)
     }
     
     private func setupNavigationBar() {

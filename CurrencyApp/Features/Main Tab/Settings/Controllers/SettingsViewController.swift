@@ -108,6 +108,27 @@ extension SettingsViewController: UITableViewDelegate, UITableViewDataSource {
         return cell
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if indexPath.row == 0 {
+            
+            var random = Int.random(in: 0...2)
+            switch random {
+            case 0:
+                Settings.shared.currentCurrencyName = "RUB"
+                break
+            case 1:
+                Settings.shared.currentCurrencyName = "USD"
+                break
+            case 2:
+                Settings.shared.currentCurrencyName = "EUR"
+                break
+            default:
+                break
+            }
+            print("currency changed to \(Settings.shared.currentCurrencyName)")
+        }
+    }
+    
     func cellForFirstSection(cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .value1, reuseIdentifier: self.tableViewCellReuseIdentifier)
         let titles = self.data[indexPath.section].titles

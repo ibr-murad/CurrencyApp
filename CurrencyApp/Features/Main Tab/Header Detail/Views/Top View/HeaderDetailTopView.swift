@@ -241,12 +241,5 @@ class HeaderDetailTopView: UIView {
         self.setNeedsUpdateConstraints()
     }
     
-    private func setupContainerViewBackground() {
-        let gradientRect = self.containerView.bounds
-        let gradienColors: [UIColor] = [.init(rgb: 0xDE5000, alpha: 1), .init(rgb: 0xFC8D26, alpha: 1)]
-        self.containerView.setGradient(rect: gradientRect, colors: gradienColors)
-        self.isContainerHaveBackground = true
-    }
-    
 }
 

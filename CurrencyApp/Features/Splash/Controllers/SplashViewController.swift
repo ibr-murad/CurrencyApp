@@ -79,6 +79,7 @@ class SplashViewController: UIViewController {
         self.activityIndicatorViewAnimate(indicator: self.activityIndicator)
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .seconds(1)) {
             self.activityIndicator.stopAnimating()
+            
             if UserDefaults.standard.doesUserPassInitialSetup() {
                 AppDelegate.shared.rootViewController.showTabBarController()
             } else {

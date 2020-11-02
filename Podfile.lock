@@ -1,20 +1,20 @@
 PODS:
-  - Reveal-SDK (26)
   - SnapKit (4.2.0)
+  - Windless (0.1.5)
 
 DEPENDENCIES:
-  - Reveal-SDK
   - SnapKit (= 4.2.0)
+  - Windless
 
 SPEC REPOS:
   trunk:
-    - Reveal-SDK
     - SnapKit
+    - Windless
 
 SPEC CHECKSUMS:
-  Reveal-SDK: 5f94f14aff3d5f2a49f246edcd266fa4472679e9
   SnapKit: fe8a619752f3f27075cc9a90244d75c6c3f27e2a
+  Windless: c6b7d63ac3a0c7e6b241e316650d4605abf71894
 
-PODFILE CHECKSUM: c165ce3522e778d2986338e8c2e230f140ae487a
+PODFILE CHECKSUM: 7ad460ae51a1fef4cf1b5087d3c70a4b0dfa10f2
 
 COCOAPODS: 1.9.3

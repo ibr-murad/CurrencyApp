@@ -8,6 +8,6 @@ target 'CurrencyApp' do
   # Pods for CurrencyApp
 
   pod 'SnapKit', '4.2.0'
-  pod 'Reveal-SDK', :configurations => ['Debug']
+  pod 'Windless'
 
 end
