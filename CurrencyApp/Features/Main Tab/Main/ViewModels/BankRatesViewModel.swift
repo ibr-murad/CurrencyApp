@@ -2,7 +2,7 @@
 //  BankRatesViewModel.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 10/26/20.
+//  Created by Humo Programmer on 10/26/20.
 //
 
 import UIKit

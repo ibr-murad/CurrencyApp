@@ -2,13 +2,22 @@
 //  MainTopView.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 10/7/20.
+//  Created by Humo Programmer on 10/7/20.
 //
 
 import UIKit
 import SnapKit
+import Kingfisher
 
 class MainHeaderView: UIView {
+    
+    var currencyName: String {
+        if self.type == .type1 {
+            return Settings.shared.defaultCurrency.rawValue
+        }
+         return DefaultCurrency.rub.rawValue
+    }
+    var type: MainDataType = .type1
     
     //MARK: - Private variables
     
@@ -21,22 +30,38 @@ class MainHeaderView: UIView {
         view.backgroundColor = .white
         view.layer.cornerRadius = 16
         view.clipsToBounds = true
-        view.tag = 11
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    private lazy var logoConteinerView: UIView = {
+        var view = UIView()
+        view.isWindlessable = true
+        view.clipsToBounds = false
+        view.layer.cornerRadius = 6
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
     private lazy var logoImageView: UIImageView = {
         var imageView = UIImageView()
-        imageView.isWindlessable = true
+        imageView.layer.cornerRadius = 6
         imageView.contentMode = .scaleAspectFill
-        imageView.image = UIImage(named: "humoWhite")
-        imageView.tag = 22
+        imageView.backgroundColor = .clear
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
     
-    private lazy var shareButton: UIButton = {
+    private lazy var logoNameLabel: UILabel = {
+        var label = UILabel()
+        label.textAlignment = .left
+        label.font = .systemFont(ofSize: 17, weight: .semibold)
+        label.textColor = .white
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    lazy var shareButton: UIButton = {
         var button = UIButton(type: .system)
         button.setImage(UIImage(named: "share"), for: .normal)
         button.tintColor = .white
@@ -51,15 +76,22 @@ class MainHeaderView: UIView {
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
-
+    
+    private lazy var titleLableContainerView: UIView = {
+        var view = UIView()
+        view.isWindlessable = true
+        view.clipsToBounds = false
+        view.layer.cornerRadius = 6
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     private lazy var titleLabel: UILabel = {
         var label = UILabel()
-        label.isWindlessable = true
         label.text = "Самый выгодный курс по переводам"
         label.textColor = .white
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.textAlignment = .left
-        label.numberOfLines = 1
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -74,6 +106,8 @@ class MainHeaderView: UIView {
     private lazy var currencyView: CurrencyView = {
         var view = CurrencyView()
         view.isWindlessable = true
+        view.clipsToBounds = false
+        view.layer.cornerRadius = 12
         view.setColor([UIColor.white.withAlphaComponent(0.8), .white])
         view.setFont(.systemFont(ofSize: 20, weight: .bold))
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -87,24 +121,17 @@ class MainHeaderView: UIView {
         return view
     }()
     
-    private lazy var convertButton: UIButton = {
+    lazy var convertButton: UIButton = {
         var button = UIButton(type: .custom)
         button.isWindlessable = true
         button.setTitle("Ковертировать по этому курсу", for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 14, weight: .regular)
         button.backgroundColor = .init(rgb: 0xFFFFFF, alpha: 0.20)
-        button.layer.cornerRadius = 20
+        button.layer.cornerRadius = 24
         button.clipsToBounds = true
-        button.addTarget(self, action: #selector(self.convertButtonTapped(_:)), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
-    }()
-    
-    private lazy var name: UILabel = {
-        var label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
     }()
     
     //MARK: - Initialization
@@ -121,15 +148,32 @@ class MainHeaderView: UIView {
         self.addSubviews()
     }
     
-    func initView(viewModel: BankRatesViewModel) {
-        for i in 0..<viewModel.currency.count {
-            if viewModel.currency[i].name == Settings.shared.currentCurrencyName {
-                self.currencyView.initView(model: viewModel.currency[i])
+    func initView(model: BankRatesModel) {
+        for i in 0..<model.currency.count {
+            if model.currency[i].name == self.currencyName {
+                self.currencyView.initView(model: model.currency[i])
                 break
             }
         }
-        //self.name.text = viewModel.name
-        
+        self.logoNameLabel.text = model.name
+        self.updateGradientAndShadowColor(model.colors)
+        if let url = URL(string: model.icon) {
+            KingfisherManager.shared.retrieveImage(with: url) { (result) in
+                switch result {
+                case .success(let value):
+                    if model.isColored {
+                        self.logoImageView.image = value.image
+                    } else {
+                        self.logoImageView.image = value.image.with(color: .white)
+                    }
+                    
+                    break
+                case .failure(let error):
+                    print(error)
+                    break
+                }
+            }
+        }
         self.setNeedsUpdateConstraints()
     }
     
@@ -147,9 +191,18 @@ class MainHeaderView: UIView {
         self.containerView.snp.updateConstraints { (make) in
             make.edges.equalToSuperview().inset(16)
         }
-        self.logoImageView.snp.updateConstraints { (make) in
+        self.logoConteinerView.snp.updateConstraints { (make) in
             make.top.left.equalToSuperview().inset(20)
-            make.width.greaterThanOrEqualTo(50)
+            make.height.equalTo(24)
+            make.width.greaterThanOrEqualTo(100)
+        }
+        self.logoImageView.snp.updateConstraints { (make) in
+            make.top.left.bottom.equalToSuperview()
+            make.size.equalTo(24)
+        }
+        self.logoNameLabel.snp.updateConstraints { (make) in
+            make.top.right.bottom.equalToSuperview()
+            make.left.equalTo(self.logoImageView.snp.right).offset(8)
         }
         self.shareButton.snp.updateConstraints { (make) in
             make.right.equalToSuperview().inset(20)
@@ -161,12 +214,15 @@ class MainHeaderView: UIView {
             make.left.right.equalToSuperview()
             make.height.equalTo(1)
         }
-        self.titleLabel.snp.updateConstraints { (make) in
+        self.titleLableContainerView.snp.updateConstraints { (make) in
             make.top.equalTo(self.lineView1.snp.bottom).offset(8)
             make.left.right.equalToSuperview().inset(20)
         }
+        self.titleLabel.snp.updateConstraints { (make) in
+            make.edges.equalToSuperview()
+        }
         self.lineView2.snp.updateConstraints { (make) in
-            make.top.equalTo(self.titleLabel.snp.bottom).offset(8)
+            make.top.equalTo(self.titleLableContainerView.snp.bottom).offset(8)
             make.left.right.equalToSuperview()
             make.height.equalTo(1)
         }
@@ -182,48 +238,38 @@ class MainHeaderView: UIView {
         self.convertButton.snp.updateConstraints { (make) in
             make.top.equalTo(self.lineView3.snp.bottom).offset(20)
             make.left.right.bottom.equalToSuperview().inset(20)
-            make.height.equalTo(40)
-        }
-        self.name.snp.updateConstraints { (make) in
-            make.top.equalToSuperview()
-            make.centerX.equalToSuperview()
+            make.height.equalTo(48)
         }
         super.updateConstraints()
-    }
-    
-    //MARK: - Actions
-    
-    @objc private func convertButtonTapped(_ sender: UIButton) {
-        sender.tapAnimation {
-            NotificationCenter.default.post(name: .headerConvertButtonTapped, object: nil)
-        }
     }
     
     //MARK: - Setters
     
     private func addSubviews() {
         self.addSubview(self.containerView)
-        self.containerView.addSubview(self.logoImageView)
+        self.containerView.addSubview(self.logoConteinerView)
+        self.logoConteinerView.addSubview(self.logoImageView)
+        self.logoConteinerView.addSubview(self.logoNameLabel)
         self.containerView.addSubview(self.shareButton)
         self.containerView.addSubview(self.lineView1)
-        self.containerView.addSubview(self.titleLabel)
+        self.containerView.addSubview(self.titleLableContainerView)
+        self.titleLableContainerView.addSubview(self.titleLabel)
         self.containerView.addSubview(self.lineView2)
         self.containerView.addSubview(self.currencyView)
         self.containerView.addSubview(self.lineView3)
         self.containerView.addSubview(self.convertButton)
-        self.containerView.addSubview(self.name)
         
         self.setNeedsUpdateConstraints()
     }
     
-    func updateGradientAndShadowColor() {
-        let model = UserDefaults.standard.getCurrentTopColorModel()
+    func updateGradientAndShadowColor(_ colorsModel: ColorsModel? = nil) {
+        var gradientColors: [UIColor] = [.init(rgb: 0x000000), .init(rgb: 0x000000)]
+        var shadowColor: UIColor = .init(rgb: 0x000000)
         let gradientRect = self.containerView.bounds
-        var gradientColors: [UIColor] = []
-        for color in model.gradientColors {
-            gradientColors.append(UIColor(rgb: color, alpha: 1.0))
+        if let colorsModel = colorsModel {
+            gradientColors = [.init(hex: colorsModel.color_1), .init(hex: colorsModel.color_2)]
+            shadowColor = .init(hex: colorsModel.color_1)
         }
-        let shadowColor = UIColor(rgb: model.shadowColor, alpha: 1.0)
         self.containerView.setGradient(rect: gradientRect, colors: gradientColors)
         self.containerView.dropShadow(
             color: shadowColor,opacity: 0.6, offSet: .init(width: 0, height: 8), radius: 10)

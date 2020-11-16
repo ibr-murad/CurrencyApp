@@ -2,22 +2,25 @@
 //  SettingsViewController.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 10/12/20.
+//  Created by Humo Programmer on 10/12/20.
 //
 
 import UIKit
 
 class SettingsViewController: BaseViewController {
     
-    //MARK: - Public variables
-    
     //MARK: - Private variables
     
     private let tableViewCellReuseIdentifier = "SettingsTableViewCell"
-    
     private let data: [SettingsTableViewSectionModel] = [
-        .init(header: "ОБЩИЕ", titles: ["Опция показа курсов валют", "Валюта по умолчанию", "Title 1", "Уведомления"]),
-        .init(header: "ПОДДЕРЖКА", titles: ["Написать в Telegram"])]
+        .init(header: "ОБЩИЕ",
+              titles: ["Опция показа курсов валют",
+                       "Валюта по умолчанию",
+                       "Уведомления"]),
+        .init(header: "ПОДДЕРЖКА",
+              titles: ["Написать в Telegram",
+                       "Написать в WhatsApp",
+                       "Написать в Viber"])]
     
     //MARK: - GUI variables
     
@@ -51,9 +54,15 @@ class SettingsViewController: BaseViewController {
         super.viewDidLoad()
         
         self.view.backgroundColor = .white
-        self.setupNavigationBar()
+        self.navigationItem.title = "Настройки"
         self.addSubviews()
         self.makeConstraints()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        self.tableView.reloadData()
     }
 
     //MARK: - Constraints
@@ -70,16 +79,8 @@ class SettingsViewController: BaseViewController {
         self.view.addSubview(self.tableView)
     }
     
-    private func setupNavigationBar() {
-        self.navigationItem.title = "Настройки"
-        if #available(iOS 11.0, *) {
-            self.navigationItem.largeTitleDisplayMode = .never
-        }
-    }
-    
     @objc private func notificationSwithValueChange(_ sender: UISwitch) {
-        UserDefaults.standard.set(sender.isOn, forKey: "isPlainMode")
-        NotificationCenter.default.post(name: .modeUpdated, object: nil)
+        print(sender.isOn)
     }
     
 }
@@ -104,28 +105,31 @@ extension SettingsViewController: UITableViewDelegate, UITableViewDataSource {
         let cell = indexPath.section == 0 ?
             self.cellForFirstSection(cellForRowAt: indexPath) :
             self.cellForSecondSection(cellForRowAt: indexPath)
-        
+        cell.selectionStyle = .none
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if indexPath.row == 0 {
-            
-            var random = Int.random(in: 0...2)
-            switch random {
-            case 0:
-                Settings.shared.currentCurrencyName = "RUB"
-                break
-            case 1:
-                Settings.shared.currentCurrencyName = "USD"
-                break
-            case 2:
-                Settings.shared.currentCurrencyName = "EUR"
-                break
-            default:
-                break
+        if indexPath.section == 0 {
+            if indexPath.row == 0 {
+                let modeVC =  CurrencyModeViewController()
+                Interface.shared.pushVC(vc: modeVC)
+            } else if indexPath.row == 1 {
+                let currencyVC =  DefaultCurrencyViewController()
+                Interface.shared.pushVC(vc: currencyVC)
+            } else if indexPath.row == 2 {
+                self.notificationsSwitch.setOn(!self.notificationsSwitch.isOn, animated: true)
+                self.notificationSwithValueChange(self.notificationsSwitch)
             }
-            print("currency changed to \(Settings.shared.currentCurrencyName)")
+            
+        } else if indexPath.section == 1 {
+            if indexPath.row == 0 {
+                //link to telegram
+            } else if indexPath.row == 1 {
+                //link to whatsapp
+            } else if indexPath.row == 2 {
+                //link to viber
+            }
         }
     }
     
@@ -133,15 +137,17 @@ extension SettingsViewController: UITableViewDelegate, UITableViewDataSource {
         let cell = UITableViewCell(style: .value1, reuseIdentifier: self.tableViewCellReuseIdentifier)
         let titles = self.data[indexPath.section].titles
         cell.textLabel?.text = titles[indexPath.row]
-        if !(indexPath.row == titles.count - 1) {
-            cell.detailTextLabel?.text = "Detail"
-            cell.detailTextLabel?.textColor = .init(rgb: 0x3C3C43, alpha: 0.3)
-            cell.accessoryType = .disclosureIndicator
-        } else {
+        cell.accessoryType = .disclosureIndicator
+        cell.detailTextLabel?.textColor = .init(rgb: 0x3C3C43, alpha: 0.3)
+        cell.tintColor = .init(rgb: 0x3C3C43, alpha: 0.3)
+        if indexPath.row == 0 {
+            cell.detailTextLabel?.text = Settings.shared.mode.rawValue
+        } else if indexPath.row == 1 {
+            cell.detailTextLabel?.text = Settings.shared.defaultCurrency.rawValue
+        } else if indexPath.row == 2 {
             cell.accessoryType = .none
             cell.accessoryView = self.notificationsSwitch
         }
-        cell.tintColor = .init(rgb: 0x3C3C43, alpha: 0.3)
         return cell
     }
     
@@ -149,8 +155,14 @@ extension SettingsViewController: UITableViewDelegate, UITableViewDataSource {
         let cell = UITableViewCell(style: .value1, reuseIdentifier: self.tableViewCellReuseIdentifier)
         let titles = self.data[indexPath.section].titles
         cell.textLabel?.text = titles[indexPath.row]
-        cell.textLabel?.textColor = .init(rgb: 0x007AFF)
+        if indexPath.row == 0 {
+            cell.textLabel?.textColor = .init(rgb: 0x007AFF)
+        } else if indexPath.row == 1 {
+            cell.textLabel?.textColor = .init(rgb: 0x128C7E)
+        } else if indexPath.row == 2 {
+            cell.textLabel?.textColor = .purple
+        }
         return cell
     }
+    
 }
- 

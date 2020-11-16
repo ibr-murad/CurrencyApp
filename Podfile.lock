@@ -1,20 +1,26 @@
 PODS:
+  - Kingfisher (5.15.7):
+    - Kingfisher/Core (= 5.15.7)
+  - Kingfisher/Core (5.15.7)
   - SnapKit (4.2.0)
   - Windless (0.1.5)
 
 DEPENDENCIES:
+  - Kingfisher
   - SnapKit (= 4.2.0)
   - Windless
 
 SPEC REPOS:
   trunk:
+    - Kingfisher
     - SnapKit
     - Windless
 
 SPEC CHECKSUMS:
+  Kingfisher: 6e1a13523fcb1c86924ce53affe4ac957e544d59
   SnapKit: fe8a619752f3f27075cc9a90244d75c6c3f27e2a
   Windless: c6b7d63ac3a0c7e6b241e316650d4605abf71894
 
-PODFILE CHECKSUM: 7ad460ae51a1fef4cf1b5087d3c70a4b0dfa10f2
+PODFILE CHECKSUM: 56d4f408b9b9dc74b2a8f3944e960147a34b359a
 
-COCOAPODS: 1.9.3
+COCOAPODS: 1.10.0

@@ -2,18 +2,16 @@
 //  OnboardingSecondViewController.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 10/12/20.
+//  Created by Humo Programmer on 10/12/20.
 //
 
 import UIKit
 
 class OnboardingSecondViewController: UIViewController {
     
-    //MARK: - Public variables
-    
     //MARK: - Private variables
     
-    private let data: [OnboardingCurrencyItemModel] = [
+    private let data: [CurrencyItemModel] = [
         .init(image: UIImage(named: "rub"), code: "RUB", name: "Российский Рубль"),
         .init(image: UIImage(named: "usd"), code: "USD", name: "Доллар США"),
         .init(image: UIImage(named: "eur"), code: "EUR", name: "Евро")]
@@ -38,8 +36,8 @@ class OnboardingSecondViewController: UIViewController {
         return label
     }()
     
-    private lazy var currencyView: OnboardingCurrencyView = {
-        var view = OnboardingCurrencyView()
+    private lazy var currencyView: DefaultCurrencyView = {
+        var view = DefaultCurrencyView()
         view.initView(data: self.data)
         view.translatesAutoresizingMaskIntoConstraints = false
         return view

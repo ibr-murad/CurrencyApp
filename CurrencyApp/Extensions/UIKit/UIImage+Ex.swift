@@ -2,7 +2,7 @@
 //  UIImage+Ex.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 10/12/20.
+//  Created by Humo Programmer on 10/12/20.
 //
 
 import UIKit

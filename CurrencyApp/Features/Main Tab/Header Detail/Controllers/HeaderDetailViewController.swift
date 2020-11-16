@@ -2,10 +2,11 @@
 //  HeaderDetailViewController.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 10/13/20.
+//  Created by Humo Programmer on 10/13/20.
 //
 
 import UIKit
+import Kingfisher
 
 class HeaderDetailViewController: UIViewController {
     
@@ -14,13 +15,9 @@ class HeaderDetailViewController: UIViewController {
     //MARK: - Private variables
     
     private let identifier = "HeaderDetailTableViewCell"
-    private var navigationBarBackgroundImage: UIImage?
     private var isSwipeAnimationEnded: Bool = true
-    private let defaultGradientColors: [UIColor] = [
-        .init(rgb: 0xDE5000, alpha: 1),
-        .init(rgb: 0xFC8D26, alpha: 1)]
-    private let defaultShadowColor: UIColor = .init(rgb: 0xFB8B25, alpha: 0.52)
-    
+    private var model: BankRatesModel?
+
     //MARK: - GUI variables
     
     private lazy var shareBarButton: UIBarButtonItem = {
@@ -31,13 +28,29 @@ class HeaderDetailViewController: UIViewController {
         return button
     }()
     
+    private lazy var logoConteinerView: UIView = {
+        var view = UIView()
+        view.clipsToBounds = false
+        view.layer.cornerRadius = 6
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     private lazy var logoImageView: UIImageView = {
         var imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.image = UIImage(named: "humoWhite")
-        imageView.tag = 22
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
+    }()
+    
+    private lazy var logoNameLabel: UILabel = {
+        var label = UILabel()
+        label.textAlignment = .left
+        label.font = .systemFont(ofSize: 17, weight: .semibold)
+        label.textColor = .white
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
     }()
     
     private lazy var topContainerView: UIView = {
@@ -50,32 +63,21 @@ class HeaderDetailViewController: UIViewController {
     
     private lazy var topView: HeaderDetailTopView = {
         var view = HeaderDetailTopView()
-        let swipeDown = UISwipeGestureRecognizer(target: self, action: #selector(self.topViewSwippedDown))
-        swipeDown.direction = .down
-        let swipeUp = UISwipeGestureRecognizer(target: self, action: #selector(self.topViewSwippedUp))
-        swipeUp.direction = .up
-        view.addGestureRecognizer(swipeDown)
-        view.addGestureRecognizer(swipeUp)
+        view.convertButton.addTarget(self, action: #selector(self.convertButtonTapped(_:)), for: .touchUpInside)
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
-    private lazy var tableView: UITableView = {
-        var tableView = UITableView()
-        tableView.dataSource = self
-        tableView.delegate = self
-        tableView.backgroundColor = .white
-        tableView.separatorStyle = .singleLine
-        tableView.rowHeight = 55
-        tableView.showsVerticalScrollIndicator = false
-        tableView.tableHeaderView?.backgroundColor = .clear
-        tableView.tableFooterView = UIView()
-        tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: self.identifier)
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        return tableView
+    private lazy var lastUpdateLabel: UILabel = {
+        var label = UILabel()
+        label.text = "Последний раз обновлено " + UserDefaults.standard.lastUpdated
+        label.textColor = .white
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: 14, weight: .regular)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
     }()
-    
+
     //MARK: - View life cycle
     
     override func viewDidLoad() {
@@ -85,31 +87,39 @@ class HeaderDetailViewController: UIViewController {
         self.addSubviews()
         self.makeConstraints()
     }
-
-    @objc func notifi() {
-        print("notifi")
-    }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        AppDelegate.shared.rootViewController.isBlackStatusBar = false
         self.setupNavigationBar()
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        
-        AppDelegate.shared.rootViewController.isBlackStatusBar = true
-        self.navigationController?.navigationBar.setBackgroundImage(
-            self.navigationBarBackgroundImage, for: .default)
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         
-        self.updateGradientAndShadowColor(
-            gradient: self.defaultGradientColors, shadow: self.defaultShadowColor)
+        self.updateGradientAndShadowColor()
+    }
+    
+    func initWithModel(_ model: BankRatesModel) {
+        self.model = model
+        self.topView.initView(model)
+        self.logoNameLabel.text = model.name
+        if let url = URL(string: model.icon) {
+            KingfisherManager.shared.retrieveImage(with: url) { (result) in
+                switch result {
+                case .success(let value):
+                    if model.isColored {
+                        self.logoImageView.image = value.image
+                    } else {
+                        self.logoImageView.image = value.image.with(color: .white)
+                    }
+                    break
+                case .failure(let error):
+                    print(error)
+                    break
+                }
+            }
+        }
     }
     
     //MARK: - Constraints
@@ -119,35 +129,54 @@ class HeaderDetailViewController: UIViewController {
             make.top.left.right.equalToSuperview()
         }
         self.topView.snp.makeConstraints { (make) in
-            make.top.equalTo(self.topLayoutGuide.snp.bottom)
+            if #available(iOS 11.0, *) {
+                make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
+            } else {
+                make.top.equalTo(self.topLayoutGuide.snp.top)
+            }
             make.left.right.bottom.equalToSuperview()
         }
-        self.tableView.snp.makeConstraints { (make) in
-            make.top.equalTo(self.topContainerView.snp.bottom)
-            make.left.right.equalToSuperview()
-            make.bottom.greaterThanOrEqualToSuperview()
+        self.lastUpdateLabel.snp.makeConstraints { (make) in
+            make.bottom.equalToSuperview().inset(20)
+            make.centerX.equalToSuperview()
+        }
+        self.logoConteinerView.snp.makeConstraints { (make) in
+            make.top.equalToSuperview().offset(16)
+            make.centerX.equalToSuperview()
+        }
+        self.logoImageView.snp.updateConstraints { (make) in
+            make.top.left.bottom.equalToSuperview()
+            make.size.equalTo(24)
+        }
+        self.logoNameLabel.snp.updateConstraints { (make) in
+            make.top.right.bottom.equalToSuperview()
+            make.left.equalTo(self.logoImageView.snp.right).offset(8)
         }
     }
     
      //MARK: - Setters
     
     private func addSubviews() {
-        self.view.addSubview(self.tableView)
+        self.view.addSubview(self.logoConteinerView)
+        self.logoConteinerView.addSubview(self.logoImageView)
+        self.logoConteinerView.addSubview(self.logoNameLabel)
         self.view.addSubview(self.topContainerView)
         self.topContainerView.addSubview(self.topView)
+        self.view.addSubview(self.lastUpdateLabel)
     }
     
-    func updateGradientAndShadowColor(gradient colors: [UIColor], shadow color: UIColor) {
-        let gradientRect = self.topContainerView.bounds
-        self.topContainerView.setGradient(rect: gradientRect, colors: colors)
-        self.topContainerView.dropShadow(color: color, offSet: .init(width: 0, height: 8), radius: 20)
+    func updateGradientAndShadowColor(_ colorsModel: ColorsModel? = nil) {
+        let gradientRect = self.view.bounds
+        var gradientColors: [UIColor] = [.init(rgb: 0x000000), .init(rgb: 0x000000)]
+        if let model = self.model {
+            gradientColors = [.init(hex: model.colors.color_1), .init(hex: model.colors.color_2)]
+        }
+        self.view.setGradient(rect: gradientRect, colors: gradientColors)
     }
     
     private func setupNavigationBar() {
-        self.navigationItem.titleView = self.logoImageView
-        self.navigationBarBackgroundImage =
-            self.navigationController?.navigationBar.backgroundImage(for: .default)
         self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
+        self.navigationController?.navigationBar.isTranslucent = true
         self.navigationItem.rightBarButtonItem = self.shareBarButton
         if #available(iOS 11.0, *) {
             self.navigationItem.largeTitleDisplayMode = .never
@@ -156,66 +185,24 @@ class HeaderDetailViewController: UIViewController {
     
     //MARK: - Actions
     
-    @objc private func topViewSwippedDown(_ sender: UISwipeGestureRecognizer) {
-        self.topView.isOpenState = true
-        UIView.animate(withDuration: 0.5) {
-            self.view.layoutIfNeeded()
-            self.isSwipeAnimationEnded = false
-        } completion: { (finish) in
-            self.isSwipeAnimationEnded = true
-            self.viewDidLayoutSubviews()
-        }
-    }
-    
-    @objc private func topViewSwippedUp(_ sender: UISwipeGestureRecognizer) {
-        self.topView.isOpenState = false
-        UIView.animate(withDuration: 0.5) {
-            self.isSwipeAnimationEnded = false
-            self.view.layoutIfNeeded()
-        } completion: { (finish) in
-            self.isSwipeAnimationEnded = true
-            self.viewDidLayoutSubviews()
-        }
-    }
-    
     @objc private func shareBarButtonTapped(_ sender: UIButton) {
-        print("tap")
-    }
-    
-}
-
-//MARK: - UITableViewDelegate, UITableViewDataSource
-
-extension HeaderDetailViewController: UITableViewDelegate, UITableViewDataSource {
-    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 4
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell(style: .value1, reuseIdentifier: self.identifier)
-        
-        cell.textLabel?.text = "Title text"
-        cell.imageView?.frame = CGRect(x: 0, y: 0, width: 40, height: 40)
-        cell.selectionStyle = .none
-        
-        let randomDetailText = "\(Int.random(in: 10...20))"
-        
-        if indexPath.row % 4 == 0 {
-            cell.detailTextLabel?.text = "-" + randomDetailText
-            cell.imageView?.image =  UIImage(named: "chartdown")
-            cell.detailTextLabel?.textColor = .systemRed
-        } else {
-            cell.detailTextLabel?.text = "+" + randomDetailText
-            cell.imageView?.image =  UIImage(named: "chartup")
-            cell.detailTextLabel?.textColor = .systemGreen
+        let renderer = UIGraphicsImageRenderer(size: self.view.bounds.size)
+        let image = renderer.image { ctx in
+            self.view.drawHierarchy(in: self.view.bounds, afterScreenUpdates: true)
         }
+        let activityVC = UIActivityViewController(activityItems: [image], applicationActivities: [])
+        self.view.isUserInteractionEnabled = false
+        self.present(activityVC, animated: true, completion: { [weak self] in
+            self?.view.isUserInteractionEnabled = true
+        })
+    }
+    
+    @objc private func convertButtonTapped(_ sender: UIButton) {
+        guard let bank = self.model else { return }
+        let convertController = ConvertViewController()
+        let navController = UINavigationController(rootViewController: convertController)
+        convertController.initWithModels(bank.currency)
         
-        return cell
+        self.present(navController, animated: true, completion: nil)
     }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print(indexPath)
-    }
-    
 }

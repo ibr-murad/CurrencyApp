@@ -2,7 +2,7 @@
 //  Interface.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 10/8/20.
+//  Created by Humo Programmer on 10/8/20.
 //
 
 import UIKit

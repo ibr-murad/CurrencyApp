@@ -2,7 +2,7 @@
 //  Settings.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 10/26/20.
+//  Created by Humo Programmer on 10/26/20.
 //
 
 import UIKit
@@ -13,12 +13,11 @@ class Settings {
     
     //MARK: - Public variables
     
-    var currentCurrencyName: String {
+    var defaultCurrency: DefaultCurrency {
         get {
-            return UserDefaults.standard.getCurrentCurrencyName()
-        }
-        set {
-            UserDefaults.standard.setValue(newValue, forKey: "currentCurrencyName")
+            return UserDefaults.standard.getDefaultCurrencyName()
+        } set {
+            UserDefaults.standard.setValue(newValue.rawValue, forKey: "defaultCurrencyName")
         }
     }
     
@@ -38,10 +37,12 @@ class Settings {
         }
     }
     
-    enum Mode {
-        case plain
-        case extend
+    enum Mode: String {
+        case plain = "Простой"
+        case extend = "Расширенный"
     }
+    
+
     
     //MARK: - Initialization
     
@@ -49,4 +50,11 @@ class Settings {
     
     //MARK: - Helpers
     
+}
+
+enum DefaultCurrency: String {
+    case rub = "RUB"
+    case usd = "USD"
+    case eur = "EUR"
+    case tjs = "TJS"
 }

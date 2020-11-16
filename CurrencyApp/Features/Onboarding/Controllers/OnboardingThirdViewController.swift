@@ -2,7 +2,7 @@
 //  OnboardingThirdViewController.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 10/12/20.
+//  Created by Humo Programmer on 10/12/20.
 //
 
 import UIKit
@@ -34,8 +34,8 @@ class OnboardingThirdViewController: UIViewController {
         return label
     }()
     
-    private lazy var currencyModeView: OnboardingCurrencyModeView = {
-        var view = OnboardingCurrencyModeView()
+    private lazy var currencyModeView: CurrencyModeView = {
+        var view = CurrencyModeView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()

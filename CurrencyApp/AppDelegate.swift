@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 10/7/20.
+//  Created by Humo Programmer on 10/7/20.
 //
 
 import UIKit

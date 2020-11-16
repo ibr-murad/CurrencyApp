@@ -97,7 +97,7 @@ class CurrencyView: UIView {
         self.thirdItem.initView("Продажа", model.sell)
         
         self.firstLabel.text = "1 " + model.name
-        self.secondLabel.text = model.buy + "TJS"
+        self.secondLabel.text = model.buy + " TJS"
         
         self.setNeedsUpdateConstraints()
     }

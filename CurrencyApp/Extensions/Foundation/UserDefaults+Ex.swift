@@ -2,7 +2,7 @@
 //  UserDefaults+Ex.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 10/14/20.
+//  Created by Humo Programmer on 10/14/20.
 //
 
 import Foundation
@@ -17,30 +17,28 @@ extension UserDefaults {
         return bool(forKey: "isPlainMode")
     }
     
-    func getCurrentCurrencyName() -> String {
-        if let name = value(forKey: "currentCurrencyName") as? String {
-            return name
+    func getDefaultCurrencyName() -> DefaultCurrency {
+        if let name = value(forKey: "defaultCurrencyName") as? String,
+           let rawValue = DefaultCurrency(rawValue: name) {
+            return rawValue
         }
-        return "RUB"
+        return .rub
     }
     
-    func setCurrentTopColorModel(model: CurrentTopColorModel) {
-        let encoder = JSONEncoder()
-        if let encoded = try? encoder.encode(model) {
-            set(encoded, forKey: "CurrentTopColorModel")
-        }
+    func saveLastUpdate() {
+        let current = Date()
+        let formater = DateFormatter()
+        formater.dateFormat = "dd.MM.YYYY HH:mm"
+        setValue(formater.string(from: current), forKey: "lastUpdate")
         synchronize()
     }
     
-    func getCurrentTopColorModel() -> CurrentTopColorModel {
-        let decoder = JSONDecoder()
-        if let saved = object(forKey: "CurrentTopColorModel") as? Data,
-           let model = try? decoder.decode(CurrentTopColorModel.self, from: saved) {
-            return model
+    var lastUpdated: String {
+        guard let string = value(forKey: "lastUpdate") as? String else {
+            
+            return Date().description
         }
-        return CurrentTopColorModel(
-            gradientColors: [0xDE5000, 0xFC8D26],
-            shadowColor: 0xFB8B25)
+        return string
     }
     
 }

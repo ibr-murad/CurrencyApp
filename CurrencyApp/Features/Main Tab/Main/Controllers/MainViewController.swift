@@ -2,21 +2,24 @@
 //  MainViewController.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 10/7/20.
+//  Created by Humo Programmer on 10/7/20.
 //
 
 import UIKit
 import SnapKit
 import Windless
+import Kingfisher
 
 class MainViewController: BaseViewController {
-    
-    //MARK: - Public variables
     
     //MARK: - Private variables
     
     private var viewModel = MainControllerViewModel()
-    private var isRequestBusy: Bool = false
+    private var isRequestBusy: Bool = false {
+        willSet {
+            self.segmentedControl.isEnabled = !newValue
+        }
+    }
     private var isDataLoaded: Bool = false
     
     //MARK: - GUI variables
@@ -30,11 +33,29 @@ class MainViewController: BaseViewController {
         return button
     }()
     
+    private lazy var segmentedContainerView: UIView = {
+        var view = UIView()
+        view.backgroundColor = .init(rgb: 0xF3F4F5)
+        view.isOpaque = true
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    private lazy var segmentedControl: UISegmentedControl = {
+        var segment = UISegmentedControl()
+        segment.insertSegment(withTitle: "Обычный", at: 0, animated: true)
+        segment.insertSegment(withTitle: "Переводы РФ", at: 1, animated: true)
+        segment.selectedSegmentIndex = 0
+        segment.addTarget(self, action: #selector(self.segmentedControleValueChanged), for: .valueChanged)
+        segment.translatesAutoresizingMaskIntoConstraints = false
+        return segment
+    }()
+    
     private lazy var headerView: MainHeaderView = {
         var view = MainHeaderView()
-        let tap = UITapGestureRecognizer(target: self, action: #selector(self.headerViewTapped))
-        view.addGestureRecognizer(tap)
-        view.tag = 1
+        view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.headerViewTapped)))
+        view.convertButton.addTarget(self, action: #selector(self.headerConvertButtonTapped), for: .touchUpInside)
+        view.shareButton.addTarget(self, action: #selector(self.headerShareButtonTapped), for: .touchUpInside)
         return view
     }()
     
@@ -58,21 +79,26 @@ class MainViewController: BaseViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
     }()
-
+    
     private lazy var refreshControl: UIRefreshControl = {
         var refresh = UIRefreshControl()
-        refresh.tintColor = .red
+        refresh.tintColor = .orange
         refresh.addTarget(self, action: #selector(self.refreshControlValueChanged), for: .valueChanged)
         refresh.translatesAutoresizingMaskIntoConstraints = false
         return refresh
     }()
-
+    
+    private lazy var containerView: UIView = {
+        var view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     //MARK: - View life cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.navigationController?.delegate = self
         self.view.backgroundColor = .init(rgb: 0xF3F4F5)
         
         self.setupNavigationBar()
@@ -93,12 +119,27 @@ class MainViewController: BaseViewController {
         
         self.setHiddenSttengsButton(true)
     }
-
+    
+    
     //MARK: - Constraints
     
     private func makeConstraints() {
+        self.segmentedContainerView.snp.makeConstraints { (make) in
+            if #available(iOS 11.0, *) {
+                make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
+            } else {
+                make.top.equalTo(self.topLayoutGuide.snp.bottom)
+            }
+            make.left.right.equalToSuperview()
+        }
+        self.segmentedControl.snp.makeConstraints { (make) in
+            make.top.equalToSuperview().inset(8)
+            make.left.right.equalToSuperview().inset(16)
+            make.bottom.equalToSuperview().inset(12)
+        }
         self.tableView.snp.makeConstraints { (make) in
-            make.edges.equalToSuperview()
+            make.top.equalTo(self.segmentedControl.snp.bottom)
+            make.left.right.bottom.equalToSuperview()
         }
         self.settingsButton.snp.makeConstraints { (make) in
             make.right.equalToSuperview().inset(20)
@@ -109,20 +150,22 @@ class MainViewController: BaseViewController {
     
     //MARK: - Setters
     
+    private func addSubviews() {
+        self.view.addSubview(self.tableView)
+        self.view.addSubview(self.segmentedContainerView)
+        self.segmentedContainerView.addSubview(self.segmentedControl)
+    }
+    
     private func setupNavigationBar() {
         self.navigationItem.title = "Выгодный курс"
         self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "Курс", style: .plain, target: nil, action: nil)
         self.navigationController?.navigationBar.addSubview(self.settingsButton)
     }
     
-    private func addSubviews() {
-        self.view.addSubview(self.tableView)
-    }
-    
     private func addObservers() {
         NotificationCenter.default.addObserver(
-            self, selector: #selector(self.headerConvertButtonTapped),
-            name: .headerConvertButtonTapped, object: nil)
+            self, selector: #selector(self.defaultSettingsUpdated),
+            name: .defaultCurrencyUpdated, object: nil)
     }
     
     private func setHiddenSttengsButton(_ value: Bool) {
@@ -131,6 +174,18 @@ class MainViewController: BaseViewController {
     }
     
     //MARK: - Actions
+    
+    @objc private func segmentedControleValueChanged(_ sender: UISegmentedControl) {
+        if !self.tableView.isAtTop {
+            UIView.animate(withDuration: 1) {
+                self.tableView.setContentOffset(.zero, animated: true)
+            } completion: { (_) in
+                self.startLoad()
+            }
+        } else {
+            self.startLoad()
+        }
+    }
     
     @objc private func refreshControlValueChanged(_ sender: UIRefreshControl) {
         sender.beginRefreshing()
@@ -142,46 +197,119 @@ class MainViewController: BaseViewController {
     }
     
     @objc private func headerViewTapped() {
-        let controller = HeaderDetailViewController()
-        controller.transitioningDelegate = self
+        guard let bank = self.viewModel.bestBank else { return }
         self.headerView.tapAnimation {
-            Interface.shared.pushVC(vc: controller)
+            self.showDetail(for: bank)
         }
     }
     
-    @objc private func headerConvertButtonTapped() {
-        let convertController = ConvertViewController()
-        let navController = UINavigationController(rootViewController: convertController)
-        self.present(navController, animated: true, completion: nil)
-        convertController.closeButtonTappedHandler = { [weak self] in
-            self?.dismiss(animated: true, completion: nil)
+    @objc private func headerShareButtonTapped() {
+        let renderer = UIGraphicsImageRenderer(size: self.headerView.bounds.size)
+        let image = renderer.image { ctx in
+            self.headerView.shareButton.isHidden = true
+            self.headerView.drawHierarchy(in: self.headerView.bounds, afterScreenUpdates: true)
+            self.headerView.shareButton.isHidden = false
         }
+        let activityVC = UIActivityViewController(activityItems: [image], applicationActivities: [])
+        self.view.isUserInteractionEnabled = false
+        self.present(activityVC, animated: true, completion: { [weak self] in
+            self?.view.isUserInteractionEnabled = true
+        })
+    }
+    
+    @objc private func headerConvertButtonTapped() {
+        guard let bank = self.viewModel.bestBank else { return }
+        self.showConvert(for: bank)
+    }
+    
+    @objc private func defaultSettingsUpdated() {
+        self.startLoad()
     }
     
     //MARK: - Network
     
-    private func fetchData() {
-        Network.shared.testRequest { [weak self] (response: Result<[BankRatesModel], NetworkError>) in
+    /*private func loadData() {
+        let url: URLPath = self.segmentedControl.selectedSegmentIndex == 0 ? .npcr_bank_rates : .c2c_bank_rates
+        Network.shared.request(url: url) { [weak self] (response: Result<[BankRatesModel], NetworkError>) in
             guard let self = self else { return }
             switch response {
             case .success(let models):
-                self.viewModel = MainControllerViewModel(models: models)
+                try? CodableStorage.shared.save(models, for: url.rawValue)
                 break
             case .failure(let error):
-                print(error)
+                print(error.localizedDescription)
                 break
             }
             self.endLoading()
         }
-    }
+    }*/
 
-    //MARK: - Helpers
+    
+    private func fetchData() {
+        
+        let url: URLPath = self.segmentedControl.selectedSegmentIndex == 0 ? .npcr_bank_rates : .c2c_bank_rates
+        
+        //Network.shared.testRequest { [weak self] (response: Result<[BankRatesModel], NetworkError>) in
+        Network.shared.request(url: url) { [weak self] (response: Result<[BankRatesModel], NetworkError>) in
+            guard let self = self else { return }
+            var fethchedModels: [BankRatesModel]?
+            switch response {
+            case .success(let models):
+                fethchedModels = models
+                UserDefaults.standard.saveLastUpdate()
+                break
+            case .failure(let error):
+                fethchedModels = try? CodableStorage.shared.fetch(for: url.rawValue)
+                print(error)
+                break
+            }
+            if let fethchedModels = fethchedModels {
+                if self.segmentedControl.selectedSegmentIndex == 0 {
+                    self.viewModel = MainControllerViewModel(models: fethchedModels, type: .type1)
+                } else {
+                    self.viewModel = MainControllerViewModel(models: fethchedModels, type: .type2)
+                }
+            }
+            self.endLoading()
+        }
+        self.refreshControl.endRefreshing()
+    }
+    /*private func fetchData() {
+        
+        let url: URLPath = self.segmentedControl.selectedSegmentIndex == 0 ? .npcr_bank_rates : .c2c_bank_rates
+        
+        //Network.shared.testRequest { [weak self] (response: Result<[BankRatesModel], NetworkError>) in
+        Network.shared.request(url: url) { [weak self] (response: Result<[BankRatesModel], NetworkError>) in
+            guard let self = self else { return }
+            var fethchedModels: [BankRatesModel]?
+            switch response {
+            case .success(let models):
+                fethchedModels = models
+                UserDefaults.standard.saveLastUpdate()
+                break
+            case .failure(let error):
+                fethchedModels = try? CodableStorage.shared.fetch(for: url.rawValue)
+                print(error)
+                break
+            }
+            if let fethchedModels = fethchedModels {
+                if self.segmentedControl.selectedSegmentIndex == 0 {
+                    self.viewModel = MainControllerViewModel(models: fethchedModels, type: .type1)
+                } else {
+                    self.viewModel = MainControllerViewModel(models: fethchedModels, type: .type2)
+                }
+            }
+            self.endLoading()
+        }
+        self.refreshControl.endRefreshing()
+    }*/
     
     private func startLoad() {
         guard !self.isRequestBusy else {
             self.refreshControl.endRefreshing()
             return
         }
+        self.tableView.isUserInteractionEnabled = false
         self.tableView.windless
             .apply {
                 $0.beginTime = 0.5
@@ -195,30 +323,58 @@ class MainViewController: BaseViewController {
     
     private func endLoading() {
         if let bestRateModel = self.viewModel.bestBank {
-            self.headerView.initView(viewModel: bestRateModel)
+            self.headerView.type = self.viewModel.type
+            self.headerView.initView(model: bestRateModel)
         }
         self.isRequestBusy = false
         self.isDataLoaded = true
         self.tableView.windless.end()
+        self.tableView.isUserInteractionEnabled = true
         self.tableView.reloadData()
-        self.refreshControl.endRefreshing()
     }
     
-    private func showActionSheet(for bankWithId: String) {//cellAtIndexPath: IndexPath) {
-        let bankName = "Bank \(bankWithId)"
+    //MARK: - Helpers
+    
+    private func showDetail(for bank: BankRatesModel) {
+        let controller = HeaderDetailViewController()
+        controller.initWithModel(bank)
+        let navController = UINavigationController(rootViewController: controller)
+        self.present(navController, animated: true, completion: nil)
+    }
+    
+    private func showConvert(for bank: BankRatesModel) {
+        let convertController = ConvertViewController()
+        let navController = UINavigationController(rootViewController: convertController)
+        convertController.initWithModels(bank.currency, defaultName: self.headerView.currencyName)
+        convertController.setupModel(image: nil, colors: bank.colors, appStoreLink: bank.appStoreLink)
+        self.present(navController, animated: true, completion: nil)
+    }
+    
+    private func showActionSheet(forCellAt indexPath: IndexPath) {
         let actionSheet = UIAlertController(
-            title: bankName, message: "Выберите действие",
+            title: self.viewModel.banks[indexPath.row].name,
+            message: "Выберите действие",
             preferredStyle: .actionSheet)
-        actionSheet.addAction(UIAlertAction(title: "Отправить", style: .default, handler: { [weak self] (_) in
-            print("Share " + bankName)
+        guard let cell = self.tableView.cellForRow(at: indexPath) as? MainTableViewCell else { return }
+        actionSheet.addAction(UIAlertAction(title: "Поделиться", style: .default, handler: { [weak self] (_) in
+            guard let self = self else { return }
+            let renderer = UIGraphicsImageRenderer(size: cell.contentView.bounds.size)
+            let image = renderer.image { ctx in
+                cell.detailButton.isHidden = true
+                cell.contentView.drawHierarchy(in: cell.contentView.bounds, afterScreenUpdates: true)
+                cell.detailButton.isHidden = false
+            }
+            let activityVC = UIActivityViewController(activityItems: [image], applicationActivities: [])
+            self.view.isUserInteractionEnabled = false
+            self.present(activityVC, animated: true, completion: { [weak self] in
+                self?.view.isUserInteractionEnabled = true
+            })
         }))
         actionSheet.addAction(UIAlertAction(title: "Конвертировать", style: .default, handler: { [weak self] (_) in
-            print("Convert " + bankName)
+            guard let bank = self?.viewModel.banks[indexPath.row] else { return }
+            self?.showConvert(for: bank)
         }))
-        actionSheet.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: { [weak self] (_) in
-            print("Cancel " + bankName)
-        }))
-        
+        actionSheet.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: nil))
         self.present(actionSheet, animated: true, completion: nil)
     }
     
@@ -236,65 +392,43 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
         if self.isDataLoaded {
             return self.viewModel.banks.count
         }
-        return 5
+        return 10
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: MainTableViewCell.reuseIdentifier, for: indexPath)
         if self.isDataLoaded {
             let viewModel = self.viewModel.banks[indexPath.row]
-            (cell as? MainTableViewCell)?.initCell(viewModel: viewModel)
+            (cell as? MainTableViewCell)?.type = self.viewModel.type
+            (cell as? MainTableViewCell)?.initCell(model: viewModel)
             (cell as? MainTableViewCell)?.deteailSelected = { [weak self] id in
-                self?.showActionSheet(for: id)
+                self?.showActionSheet(forCellAt: indexPath)
             }
         }
         return cell
     }
     
-}
-
-//MARK: - UIViewControllerTransitioningDelegate, UINavigationControllerDelegate
-
-extension MainViewController: UIViewControllerTransitioningDelegate, UINavigationControllerDelegate {
-    
-    func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
-        if viewController is SettingsViewController {
-            self.navigationItem.backBarButtonItem?.tintColor = nil
-        }
-        if viewController is HeaderDetailViewController {
-            self.navigationItem.backBarButtonItem?.tintColor = .white
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let cell = self.tableView.cellForRow(at: indexPath) as? MainTableViewCell else { return }
+        let bank = self.viewModel.banks[indexPath.row]
+        cell.containerView.tapAnimation { [weak self] in
+            self?.showDetail(for: bank)
         }
     }
     
-    func navigationController(_ navigationController: UINavigationController,
-                              animationControllerFor operation: UINavigationController.Operation,
-                              from fromVC: UIViewController,
-                              to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        var transition: UIViewControllerAnimatedTransitioning? = nil
-        if operation == .push {
-            if toVC is HeaderDetailViewController {
-                transition = animationController(forPresented: fromVC, presenting: toVC, source: fromVC)
-            }
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        guard let barHeght = self.navigationController?.navigationBar.bounds.height else { return }
+        let verticalOffset = scrollView.contentOffset.y + barHeght
+        if verticalOffset > barHeght {
+            self.segmentedContainerView.transform = CGAffineTransform.identity
+            self.segmentedContainerView.backgroundColor = .init(rgb: 0xFAFAFA)
+        } else if verticalOffset == barHeght {
+            self.segmentedContainerView.transform = CGAffineTransform.identity
+            self.segmentedContainerView.backgroundColor = .init(rgb: 0xF3F4F5)
         } else {
-            if toVC is MainViewController && fromVC is HeaderDetailViewController {
-                transition = animationController(forDismissed: toVC)
-            }
+            self.segmentedContainerView.transform = CGAffineTransform(translationX: 0, y: -scrollView.contentOffset.y)
+            self.segmentedContainerView.backgroundColor = .init(rgb: 0xF3F4F5)
         }
-        return nil
-    }
-    
-    func animationController(forPresented presented: UIViewController,
-                             presenting: UIViewController,
-                             source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        let animator = MatchTransitionAnimator()
-        animator.isPresenting = true
-        return animator
-    }
-    
-    func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        let animator = MatchTransitionAnimator()
-        animator.isPresenting = false
-        return animator
     }
     
 }

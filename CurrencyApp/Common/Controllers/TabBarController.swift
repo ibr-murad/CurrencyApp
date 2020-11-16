@@ -2,7 +2,7 @@
 //  TabBarController.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 10/8/20.
+//  Created by Humo Programmer on 10/8/20.
 //
 
 import UIKit
@@ -27,20 +27,12 @@ class TabBarController: UITabBarController {
         return controller
     }()
 
-    private lazy var convertTab: NBTViewController = {
-        let controller = NBTViewController()
-        controller.tabBarItem = UITabBarItem(
-            title: "Обмен валют",
-            image: UIImage(named: "share"), tag: 2)
-        return controller
-    }()
-
     // MARK: - View life cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let tabs = [self.mainTab, self.nbtTab, self.convertTab]
+        let tabs = [self.mainTab, self.nbtTab]
         self.viewControllers = tabs.map { UINavigationController(rootViewController: $0)}
         self.tabBarStyle()
     }

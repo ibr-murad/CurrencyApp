@@ -2,7 +2,7 @@
 //  CurrencyTableViewCell.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 10/28/20.
+//  Created by Humo Programmer on 10/28/20.
 //
 
 import UIKit
@@ -18,6 +18,8 @@ class CurrencyTableViewCell: UITableViewCell {
     private lazy var currencyImageView: UIImageView = {
         var imageView = UIImageView()
         imageView.image = UIImage(named: "rub")
+        imageView.layer.cornerRadius = 24
+        imageView.clipsToBounds = true
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
@@ -25,7 +27,7 @@ class CurrencyTableViewCell: UITableViewCell {
     private lazy var currencyLabel: UILabel = {
         var label = UILabel()
         label.text = "RUB (Российский рубль)"
-        label.font = .systemFont(ofSize: 20, weight: .medium)
+        label.font = .systemFont(ofSize: 16, weight: .regular)
         label.textAlignment = .left
         label.numberOfLines = 1
         label.textColor = Colors.textBlackHight.color()
@@ -47,6 +49,14 @@ class CurrencyTableViewCell: UITableViewCell {
         super.init(coder: coder)
         
         self.addSubviews()
+    }
+    
+    func initCell(title: String) {
+        self.currencyLabel.text = title
+        let fullPath = Network.shared.baseImageURL + "flags-\(String(title.prefix(3))).png"
+        guard let imageURL = URL(string: fullPath) else { return }
+        self.currencyImageView.kf.setImage(with: imageURL)
+        self.setNeedsUpdateConstraints()
     }
     
     //MARK: - Constraints

@@ -2,7 +2,7 @@
 //  CurrenciesViewController.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 10/28/20.
+//  Created by Humo Programmer on 10/28/20.
 //
 
 import UIKit
@@ -11,12 +11,31 @@ class CurrenciesViewController: UIViewController {
     
     //MARK: - Public variables
     
-    //MARK: - Private variables
+    var isFullPresentedEnable = false
+    var selected: ((String) -> Void)?
+    var data: [String] = [] {
+        didSet {
+            self.tableView.reloadData()
+        }
+    }
     
-    private var data: [String] = ["1", "2", "3"]
+    //MARK: - Private variables
     
     private var hasSetPointOrigin = false
     private var pointOrigin: CGPoint?
+    private var finalPoint = CGPoint(x: 0, y: 0)
+    private var isFullPresented = false {
+        willSet {
+            self.tableView.isScrollEnabled = newValue
+        }
+    }
+    
+    
+    enum ViewState {
+        case open
+        case close
+        case normal
+    }
     
     //MARK: - GUI variables
     
@@ -51,8 +70,9 @@ class CurrenciesViewController: UIViewController {
 
     private lazy var dismissButton: UIButton = {
         var button = UIButton()
-        button.setTitle("dismiss", for: .normal)
-        button.setTitleColor(.blue, for: .normal)
+        button.setImage(UIImage(named: "closeGray"), for: .normal)
+        button.layer.cornerRadius = 12
+        button.backgroundColor = .init(rgb: 0x818C99, alpha: 0.12)
         button.addTarget(self, action: #selector(self.dismissButtonTapped), for: .touchUpInside)
         button.alpha = 0
         button.isEnabled = false
@@ -65,9 +85,8 @@ class CurrenciesViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.separatorStyle = .none
+        tableView.showsVerticalScrollIndicator = false
         tableView.isScrollEnabled = false
-        tableView.tableHeaderView = UIView()
-        tableView.tableFooterView = UIView()
         tableView.register(CurrencyTableViewCell.self, forCellReuseIdentifier: CurrencyTableViewCell.identifier)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
@@ -96,8 +115,8 @@ class CurrenciesViewController: UIViewController {
     
     private func makeConstraints() {
         self.topView.snp.makeConstraints { (make) in
-            make.top.left.right.equalToSuperview()
-            make.height.equalTo(50)
+            make.top.left.right.bottom.equalToSuperview()
+            //make.height.equalTo(50)
         }
         self.topDarkIndicatorView.snp.makeConstraints { (make) in
             make.top.equalToSuperview().offset(12)
@@ -110,8 +129,9 @@ class CurrenciesViewController: UIViewController {
             make.centerX.equalToSuperview()
         }
         self.dismissButton.snp.makeConstraints { (make) in
-            make.top.right.equalToSuperview().inset(40)
-            make.height.equalTo(40)
+            make.centerY.equalTo(self.titleLabel.snp.centerY)
+            make.right.equalToSuperview().inset(20)
+            make.size.equalTo(24)
         }
         self.tableView.snp.makeConstraints { (make) in
             make.top.equalTo(self.titleLabel.snp.bottom).offset(20)
@@ -137,61 +157,79 @@ class CurrenciesViewController: UIViewController {
     
     @objc private func topViewPan(_ sender: UIPanGestureRecognizer) {
         let translation = sender.translation(in: self.view)
-        guard let pointOrigin = self.pointOrigin else { return }
-        self.view.frame.origin = CGPoint(x: 0, y: pointOrigin.y + translation.y)
         
-        /*if sender.state == .ended {
-            if self.view.frame.origin.y <= 200 {
-                self.titleLabel.snp.remakeConstraints { (make) in
-                    make.top.equalTo(self.topLayoutGuide.snp.top).offset(28)
-                    make.centerX.equalToSuperview()
+        if !self.isFullPresented {
+            guard let pointOrigin = self.pointOrigin else { return }
+
+            if self.isFullPresentedEnable {
+                guard translation.y > -pointOrigin.y else {
+                    self.setViewState(.open)
+                    return
                 }
-                UIView.animate(withDuration: 0.3) {
-                    self.view.frame.origin = CGPoint(x: 0, y: 0)
-                    self.dismissButton.alpha = 1
-                    self.dismissButton.isEnabled = true
-                    self.topView.alpha = 0
-                    self.topView.isUserInteractionEnabled = false
-                    
-                    //self.view.layoutIfNeeded()
-                    
-                }
-            } else if self.view.frame.origin.y >= 600 {
-                self.dismiss(animated: true, completion: nil)
+                self.view.frame.origin = CGPoint(x: 0, y: pointOrigin.y + translation.y)
             } else {
-                UIView.animate(withDuration: 0.3) {
-                    self.view.frame.origin = self.pointOrigin ?? CGPoint(x: 0, y: 400)
-                }
+                guard translation.y >= 0 else { return }
+                self.view.frame.origin = CGPoint(x: 0, y: pointOrigin.y + translation.y)
             }
-        }*/
+        } else {
+            guard translation.y > 0 else { return }
+            self.view.frame.origin = CGPoint(x: 0, y: self.finalPoint.y + translation.y)
+        }
+        
         if sender.state == .ended {
-            let dragVelocity = sender.velocity(in: self.view)
+            let viewY = self.view.frame.origin.y
+            let viewHeigth = self.view.frame.size.height
             
-            if dragVelocity.y >= 300 {
-                //close
-                self.dismiss(animated: true, completion: nil)
-            } else if dragVelocity.y <= -300 {
-                //open
-                self.titleLabel.snp.remakeConstraints { (make) in
-                    make.top.equalTo(self.topLayoutGuide.snp.top).offset(28)
-                    make.centerX.equalToSuperview()
-                }
-                UIView.animate(withDuration: 0.3) {
-                    self.view.frame.origin = CGPoint(x: 0, y: 0)
-                    self.view.roundedCorners(.allCorners, radius: 0)
-                    self.dismissButton.alpha = 1
-                    self.dismissButton.isEnabled = true
-                    self.topView.alpha = 0
-                    self.topView.isUserInteractionEnabled = false
-                    self.tableView.isScrollEnabled = true
-                    self.view.layoutIfNeeded()
-                }
+            if viewY >= 0 && viewY <= viewHeigth * 0.3 {
+                AppDelegate.shared.rootViewController.isBlackStatusBar = true
+                self.setViewState(.open)
+            } else if viewY > viewHeigth * 0.6{
+                self.setViewState(.close)
             } else {
-                //normal
-                UIView.animate(withDuration: 0.3) {
-                    self.view.frame.origin = self.pointOrigin ?? CGPoint(x: 0, y: 400)
-                }
+                self.setViewState(.normal)
             }
+        }
+    }
+    
+    private func setViewState(_ state: ViewState) {
+        switch state {
+        case .normal:
+            self.isFullPresented = false
+            UIView.animate(withDuration: 0.3) {
+                self.view.frame.origin = self.pointOrigin ?? CGPoint(x: 0, y: 400)
+                self.view.roundedCorners([.topLeft, .topRight], radius: 20)
+                self.topDarkIndicatorView.alpha = 1
+                self.view.layoutIfNeeded()
+            }
+            break
+        case .open:
+            self.isFullPresented = true
+            self.titleLabel.snp.remakeConstraints { (make) in
+                if #available(iOS 11.0, *) {
+                    make.top.equalTo(self.view.safeAreaLayoutGuide).offset(8)
+                } else {
+                    make.top.equalToSuperview().inset(8)
+                }
+                make.centerX.equalToSuperview()
+            }
+            self.dismissButton.snp.remakeConstraints { (make) in
+                make.centerY.equalTo(self.titleLabel.snp.centerY)
+                make.right.equalToSuperview().inset(40)
+                make.size.equalTo(24)
+            }
+            UIView.animate(withDuration: 0.3) {
+                self.view.frame.origin = CGPoint(x: 0, y: 0)
+                self.view.roundedCorners([.topLeft, .topRight], radius: 0)
+                self.topDarkIndicatorView.alpha = 0
+                self.dismissButton.alpha = 1
+                self.dismissButton.isEnabled = true
+                self.view.layoutIfNeeded()
+            }
+            break
+        case .close:
+            self.isFullPresented = false
+            self.dismiss(animated: true, completion: nil)
+            break
         }
     }
     
@@ -207,8 +245,13 @@ extension CurrenciesViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: CurrencyTableViewCell.identifier, for: indexPath)
-        
+        (cell as? CurrencyTableViewCell)?.initCell(title: self.data[indexPath.row])
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        self.selected?(String(self.data[indexPath.row].prefix(3)))
+        self.dismiss(animated: true, completion: nil)
     }
     
 }

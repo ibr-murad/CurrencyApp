@@ -2,7 +2,7 @@
 //  NetworkError.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 10/20/20.
+//  Created by Humo Programmer on 10/20/20.
 //
 
 import Foundation

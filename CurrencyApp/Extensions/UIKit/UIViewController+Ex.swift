@@ -2,7 +2,7 @@
 //  UIViewController+Ex.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 10/23/20.
+//  Created by Humo Programmer on 10/23/20.
 //
 
 import UIKit

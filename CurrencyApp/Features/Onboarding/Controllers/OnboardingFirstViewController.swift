@@ -2,17 +2,13 @@
 //  OnboardingFirstViewController.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 10/12/20.
+//  Created by Humo Programmer on 10/12/20.
 //
 
 import UIKit
 
 class OnboardingFirstViewController: UIViewController {
-    
-    //MARK: - Public variables
-    
-    //MARK: - Private variables
-    
+      
     //MARK: - GUI variables
     
     private lazy var stepLabel: UILabel = {

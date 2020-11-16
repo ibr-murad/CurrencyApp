@@ -2,27 +2,34 @@
 //  MainTableViewCell.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 10/8/20.
+//  Created by Humo Programmer on 10/8/20.
 //
 
 import UIKit
 
 class MainTableViewCell: UITableViewCell {
     
-    //MARK: - Public variables
-    
     static let reuseIdentifier = "MainTableViewCell"
     
+    //MARK: - Public variables
+    
+    var currencyName: String {
+        if self.type == .type1 {
+            return Settings.shared.defaultCurrency.rawValue
+        }
+         return DefaultCurrency.rub.rawValue
+    }
     var deteailSelected: ((String) -> Void)?
+    var type: MainDataType = .type1
     
     //MARK: - Private variables
     
-    private var viewModel: BankRatesViewModel?
+    private var model: BankRatesModel?
     private var isLayersConfigured = false
     
     //MARK: - GUI variables
     
-    private lazy var containerView: UIView = {
+    lazy var containerView: UIView = {
         var view = UIView()
         view.backgroundColor = .white
         view.layer.cornerRadius = 12
@@ -30,21 +37,32 @@ class MainTableViewCell: UITableViewCell {
         return view
     }()
     
+    private lazy var logoConteinerView: UIView = {
+        var view = UIView()
+        view.isWindlessable = true
+        view.clipsToBounds = false
+        view.layer.cornerRadius = 6
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     private lazy var logoImageView: UIImageView = {
         var imageView = UIImageView()
-        imageView.isWindlessable = true
         imageView.contentMode = .scaleAspectFill
-        imageView.image = UIImage(named: "alifBlack")
+        imageView.image = UIImage(named: "humo")
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
     
-    private lazy var name: UILabel = {
+    private lazy var logoNameLabel: UILabel = {
         var label = UILabel()
+        label.textAlignment = .left
+        label.font = .systemFont(ofSize: 17, weight: .semibold)
+        label.textColor = Colors.textBlackMain.color()
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-    
+
     private lazy var lineView: UIView = {
         var view = UIView()
         view.backgroundColor = .init(rgb: 0xF2F2F2)
@@ -55,12 +73,14 @@ class MainTableViewCell: UITableViewCell {
     private lazy var currencyView: CurrencyView = {
         var view = CurrencyView()
         view.isWindlessable = true
+        view.clipsToBounds = false
+        view.layer.cornerRadius = 12
         view.setFont(.systemFont(ofSize: 20, weight: .medium))
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
-    private lazy var detailButton: UIButton = {
+    lazy var detailButton: UIButton = {
         var button = UIButton(type: .system)
         button.setImage(UIImage(named: "detail"), for: .normal)
         button.tintColor = Colors.textBlackMiddle.color()
@@ -86,16 +106,18 @@ class MainTableViewCell: UITableViewCell {
         self.addSubviews()
     }
     
-    func initCell(viewModel: BankRatesViewModel) {
-        self.viewModel = viewModel
-        for i in 0..<viewModel.currency.count {
-            if viewModel.currency[i].name == Settings.shared.currentCurrencyName {
-                self.currencyView.initView(model: viewModel.currency[i])
+    func initCell(model: BankRatesModel) {
+        self.model = model
+        for i in 0..<model.currency.count {
+            if model.currency[i].name == self.currencyName {
+                self.currencyView.initView(model: model.currency[i])
                 break
             }
         }
-        //self.name.text = viewModel.name
-        
+        self.logoNameLabel.text = model.name
+        if let url = URL(string: model.icon) {
+            self.logoImageView.kf.setImage(with: url)
+        }
         self.setNeedsUpdateConstraints()
     }
     
@@ -117,21 +139,27 @@ class MainTableViewCell: UITableViewCell {
             make.top.bottom.equalToSuperview().inset(8)
             make.left.right.equalToSuperview().inset(16)
         }
-        self.logoImageView.snp.updateConstraints { (make) in
+        self.logoConteinerView.snp.updateConstraints { (make) in
             make.top.left.equalToSuperview().inset(20)
-            make.width.greaterThanOrEqualTo(50)
+            make.height.equalTo(24)
+            make.width.greaterThanOrEqualTo(100)
         }
-        self.name.snp.updateConstraints { (make) in
-            make.top.equalToSuperview()
-            make.centerX.equalToSuperview()
+        self.logoImageView.snp.updateConstraints { (make) in
+            make.top.left.bottom.equalToSuperview()
+            make.size.equalTo(24)
+        }
+        self.logoNameLabel.snp.updateConstraints { (make) in
+            make.top.right.bottom.equalToSuperview()
+            make.left.equalTo(self.logoImageView.snp.right).offset(8)
         }
         self.detailButton.snp.updateConstraints { (make) in
+            make.left.greaterThanOrEqualTo(self.logoConteinerView.snp.right).offset(16)
             make.right.equalToSuperview().inset(20)
-            make.centerY.equalTo(self.logoImageView.snp.centerY)
+            make.centerY.equalTo(self.logoConteinerView.snp.centerY)
             make.size.equalTo(CGSize(width: 40, height: 40))
         }
         self.lineView.snp.updateConstraints { (make) in
-            make.top.equalTo(self.logoImageView.snp.bottom).offset(16)
+            make.top.equalTo(self.logoConteinerView.snp.bottom).offset(16)
             make.left.right.equalToSuperview()
             make.height.equalTo(1)
         }
@@ -146,11 +174,12 @@ class MainTableViewCell: UITableViewCell {
     
     private func addSubviews() {
         self.contentView.addSubview(self.containerView)
-        self.containerView.addSubview(self.logoImageView)
+        self.containerView.addSubview(self.logoConteinerView)
+        self.logoConteinerView.addSubview(self.logoImageView)
+        self.logoConteinerView.addSubview(self.logoNameLabel)
         self.containerView.addSubview(self.detailButton)
         self.containerView.addSubview(self.lineView)
         self.containerView.addSubview(self.currencyView)
-        self.containerView.addSubview(self.name)
     
         self.setNeedsUpdateConstraints()
     }
@@ -158,7 +187,7 @@ class MainTableViewCell: UITableViewCell {
     //MARK: - Actions
     
     @objc private func detailButtonTapped() {
-        self.deteailSelected?("as")
+        self.deteailSelected?("")
     }
     
 }

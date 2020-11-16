@@ -2,7 +2,7 @@
 //  UIView+Ex.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 10/8/20.
+//  Created by Humo Programmer on 10/8/20.
 //
 
 import UIKit
@@ -72,4 +72,12 @@ extension UIView {
         self.layer.mask = mask
     }
     
+}
+
+
+extension UIView
+{
+    func copyView<T: UIView>() -> T {
+        return NSKeyedUnarchiver.unarchiveObject(with: NSKeyedArchiver.archivedData(withRootObject: self)) as! T
+    }
 }
