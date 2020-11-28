@@ -201,9 +201,11 @@ class ConvertView: UIView {
     lazy var downloadButton: UIButton = {
         var button = UIButton()
         button.clipsToBounds = true
+        button.adjustsImageWhenHighlighted = false
         button.setTitle("Скачать приложение банка", for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.setImage(UIImage(named: "share"), for: .normal)
+        button.imageEdgeInsets.right = 16
         button.titleLabel?.font = .systemFont(ofSize: 14, weight: .regular)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.layer.cornerRadius = 16

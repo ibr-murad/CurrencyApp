@@ -30,21 +30,26 @@ struct MainControllerViewModel {
     
     private mutating func culculateBestRate() {
         guard self.banks.count > 0 else { return }
-        self.bestBank = self.banks[0]
-        var bestBuy: Float = 0
-        for i in 0..<self.banks.count {
-            for j in 0..<self.banks[i].currency.count {
-                let defaultCurrencyName = self.type == .type1 ? Settings.shared.defaultCurrency.rawValue : "RUB"
-                if self.banks[i].currency[j].name == defaultCurrencyName {
-                    if let buy = Float(self.banks[i].currency[j].buy) {
-                        if buy > bestBuy {
-                            bestBuy = buy
-                            self.bestBank = self.banks[i]
-                        }
-                    }
-                }
+        let defaultCurrencyName = self.type == .type1 ? Settings.shared.defaultCurrency.rawValue : "RUB"
+        let best = self.banks.max {  (i, j) -> Bool in
+            if let iCurrency = i.currency.first(where: { return $0.name == defaultCurrencyName }),
+               let jCurrency = j.currency.first(where: { return $0.name == defaultCurrencyName }),
+               let iBuy = Double(iCurrency.buy),
+               let jBuy = Double(jCurrency.buy) {
+                return iBuy < jBuy
+            } else {
+                return false
             }
         }
+        guard let bestBank = best,
+              let indexOfBestBank = self.banks
+                .firstIndex(where: {$0.name == bestBank.name}) else {
+            self.bestBank = self.banks.first
+            return
+        }
+        
+        self.bestBank = best
+        self.banks.remove(at: indexOfBestBank)
     }
     
 }

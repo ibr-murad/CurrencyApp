@@ -16,7 +16,8 @@ class SettingsViewController: BaseViewController {
         .init(header: "ОБЩИЕ",
               titles: ["Опция показа курсов валют",
                        "Валюта по умолчанию",
-                       "Уведомления"]),
+                       "Уведомления",
+                       "Оцените приложение"]),
         .init(header: "ПОДДЕРЖКА",
               titles: ["Написать в Telegram",
                        "Написать в WhatsApp",
@@ -120,6 +121,8 @@ extension SettingsViewController: UITableViewDelegate, UITableViewDataSource {
             } else if indexPath.row == 2 {
                 self.notificationsSwitch.setOn(!self.notificationsSwitch.isOn, animated: true)
                 self.notificationSwithValueChange(self.notificationsSwitch)
+            } else if indexPath.row == 3 {
+                print("call in app review")
             }
             
         } else if indexPath.section == 1 {
@@ -147,7 +150,10 @@ extension SettingsViewController: UITableViewDelegate, UITableViewDataSource {
         } else if indexPath.row == 2 {
             cell.accessoryType = .none
             cell.accessoryView = self.notificationsSwitch
+        } else if indexPath.row == 3 {
+            cell.accessoryType = .none
         }
+        
         return cell
     }
     

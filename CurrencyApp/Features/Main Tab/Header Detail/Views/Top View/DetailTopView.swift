@@ -7,7 +7,7 @@
 
 import UIKit
 
-class HeaderDetailTopView: UIView {
+class DetailTopView: UIView {
     
     //MARK: - Private variables
     

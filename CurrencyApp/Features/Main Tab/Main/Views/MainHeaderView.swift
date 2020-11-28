@@ -157,22 +157,8 @@ class MainHeaderView: UIView {
         }
         self.logoNameLabel.text = model.name
         self.updateGradientAndShadowColor(model.colors)
-        if let url = URL(string: model.icon) {
-            KingfisherManager.shared.retrieveImage(with: url) { (result) in
-                switch result {
-                case .success(let value):
-                    if model.isColored {
-                        self.logoImageView.image = value.image
-                    } else {
-                        self.logoImageView.image = value.image.with(color: .white)
-                    }
-                    
-                    break
-                case .failure(let error):
-                    print(error)
-                    break
-                }
-            }
+        model.getImage { (image) in
+            //self.logoImageView.image = image
         }
         self.setNeedsUpdateConstraints()
     }
@@ -206,6 +192,7 @@ class MainHeaderView: UIView {
         }
         self.shareButton.snp.updateConstraints { (make) in
             make.right.equalToSuperview().inset(20)
+            make.left.greaterThanOrEqualTo(self.logoConteinerView.snp.right).offset(16)
             make.centerY.equalTo(self.logoImageView.snp.centerY)
             make.size.equalTo(CGSize(width: 20, height: 26))
         }

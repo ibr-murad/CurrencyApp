@@ -99,7 +99,7 @@ class ConvertViewController: UIViewController {
     func setupModel(image: UIImage? ,colors: ColorsModel? = nil, appStoreLink: String = "") {
         self.setupColors(colors)
         self.appStoreLink = appStoreLink
-        //self.convertView.downloadButton.setImage(image, for: .normal)
+        self.convertView.downloadButton.setImage(image, for: .normal)
     }
     
     //MARK: - Constraints
@@ -134,17 +134,14 @@ class ConvertViewController: UIViewController {
     }
     
     private func setupColors(_ colors: ColorsModel?) {
-        var gradientColors: [UIColor] = [.init(rgb: 0x000000), .init(rgb: 0x000000)]
-        let gradientRect = CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width - 36 - 36, height: 48)
         if let colorsModel = colors {
-            gradientColors = [.init(hex: colorsModel.color_1), .init(hex: colorsModel.color_2)]
             self.convertView.centerChangeButton.tintColor = .init(hex: colorsModel.color_1)
             self.convertView.centerValueLabel.textColor = .init(hex: colorsModel.color_1)
+            self.convertView.downloadButton.backgroundColor = .init(hex: colorsModel.color_1)
             self.shareBarButton.tintColor = .init(hex: colorsModel.color_1)
             let image = self.convertView.centerChartImageView.image?.with(color: .init(hex: colorsModel.color_1))
             self.convertView.centerChartImageView.image = image
         }
-        self.convertView.downloadButton.setGradient(rect: gradientRect, colors: gradientColors)
     }
     
     //MARK: - Actions

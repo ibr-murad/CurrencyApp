@@ -38,10 +38,13 @@ class Network {
                     return
                 }
                 
-                if let data = data,
-                   let result = try? JSONDecoder().decode(T.self, from: data) {
-                    //try? CodableStorage.shared.save(result, for: url.rawValue)
-                    completion(.success(result))
+                if let data = data {
+                    do {
+                        let result = try JSONDecoder().decode(T.self, from: data)
+                        completion(.success(result))
+                    } catch {
+                        print(error)
+                    }
                     return
                 } else {
                     completion(.failure(.parsing))
@@ -54,12 +57,18 @@ class Network {
     
     func testRequest<T: Codable>(completion: @escaping (Result<T, NetworkError>) -> ()) {
         
-        guard let path = Bundle.main.path(forResource: "test", ofType: "json") else { return }
+        guard let path = Bundle.main.path(forResource: "test", ofType: "json") else {
+            print("no file")
+            return }
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1.2) {
-            if let data = try? Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe),
-               let result = try? JSONDecoder().decode(T.self, from: data) {
-                //try? CodableStorage.shared.save(result, for: URLPath.all_bank_rates.rawValue)
-                completion(.success(result))
+            if let data = try? Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe) {
+                do {
+                    let result = try JSONDecoder().decode(T.self, from: data)
+                    completion(.success(result))
+                } catch {
+                    print(error)
+                }
+                return
             } else {
                 completion(.failure(.parsing))
             }

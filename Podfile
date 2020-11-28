@@ -9,5 +9,7 @@ target 'CurrencyApp' do
   pod 'SnapKit', '4.2.0'
   pod 'Windless'
   pod 'Kingfisher'
+  pod 'Firebase/Core'
+  pod 'Firebase/Messaging'
 
 end

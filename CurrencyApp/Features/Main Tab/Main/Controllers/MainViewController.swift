@@ -15,6 +15,9 @@ class MainViewController: BaseViewController {
     //MARK: - Private variables
     
     private var viewModel = MainControllerViewModel()
+    private var npcrData: [BankRatesModel] = []
+    private var tkbData: [BankRatesModel] = []
+    
     private var isRequestBusy: Bool = false {
         willSet {
             self.segmentedControl.isEnabled = !newValue
@@ -228,81 +231,37 @@ class MainViewController: BaseViewController {
     
     //MARK: - Network
     
-    /*private func loadData() {
-        let url: URLPath = self.segmentedControl.selectedSegmentIndex == 0 ? .npcr_bank_rates : .c2c_bank_rates
-        Network.shared.request(url: url) { [weak self] (response: Result<[BankRatesModel], NetworkError>) in
-            guard let self = self else { return }
-            switch response {
-            case .success(let models):
-                try? CodableStorage.shared.save(models, for: url.rawValue)
-                break
-            case .failure(let error):
-                print(error.localizedDescription)
-                break
-            }
-            self.endLoading()
-        }
-    }*/
-
-    
     private func fetchData() {
-        
-        let url: URLPath = self.segmentedControl.selectedSegmentIndex == 0 ? .npcr_bank_rates : .c2c_bank_rates
-        
-        //Network.shared.testRequest { [weak self] (response: Result<[BankRatesModel], NetworkError>) in
-        Network.shared.request(url: url) { [weak self] (response: Result<[BankRatesModel], NetworkError>) in
-            guard let self = self else { return }
-            var fethchedModels: [BankRatesModel]?
-            switch response {
-            case .success(let models):
-                fethchedModels = models
-                UserDefaults.standard.saveLastUpdate()
-                break
-            case .failure(let error):
-                fethchedModels = try? CodableStorage.shared.fetch(for: url.rawValue)
-                print(error)
-                break
-            }
-            if let fethchedModels = fethchedModels {
-                if self.segmentedControl.selectedSegmentIndex == 0 {
-                    self.viewModel = MainControllerViewModel(models: fethchedModels, type: .type1)
-                } else {
-                    self.viewModel = MainControllerViewModel(models: fethchedModels, type: .type2)
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .seconds(1)) {
+            let url: URLPath = self.segmentedControl.selectedSegmentIndex == 0 ? .npcr_bank_rates : .c2c_bank_rates
+            Network.shared.testRequest { [weak self] (response: Result<[BankRatesModel], NetworkError>) in
+            //Network.shared.request(url: url) { [weak self] (response: Result<[BankRatesModel], NetworkError>) in
+                guard let self = self else { return }
+                switch response {
+                case .success(let models):
+                    try? CodableStorage.shared.save(models, for: url.rawValue)
+                    UserDefaults.standard.saveLastUpdate()
+                    break
+                case .failure(let error):
+                    print(error)
+                    break
                 }
+                do{
+                    let fethchedModels: [BankRatesModel] = try CodableStorage.shared.fetch(for: url.rawValue)
+                    self.viewModel = MainControllerViewModel(models: fethchedModels, type: .type1)
+                    if self.segmentedControl.selectedSegmentIndex == 0 {
+                        self.viewModel = MainControllerViewModel(models: fethchedModels, type: .type1)
+                    } else {
+                        self.viewModel = MainControllerViewModel(models: fethchedModels, type: .type2)
+                    }
+                } catch {
+                    print(error)
+                }
+                self.endLoading()
             }
-            self.endLoading()
         }
         self.refreshControl.endRefreshing()
     }
-    /*private func fetchData() {
-        
-        let url: URLPath = self.segmentedControl.selectedSegmentIndex == 0 ? .npcr_bank_rates : .c2c_bank_rates
-        
-        //Network.shared.testRequest { [weak self] (response: Result<[BankRatesModel], NetworkError>) in
-        Network.shared.request(url: url) { [weak self] (response: Result<[BankRatesModel], NetworkError>) in
-            guard let self = self else { return }
-            var fethchedModels: [BankRatesModel]?
-            switch response {
-            case .success(let models):
-                fethchedModels = models
-                UserDefaults.standard.saveLastUpdate()
-                break
-            case .failure(let error):
-                fethchedModels = try? CodableStorage.shared.fetch(for: url.rawValue)
-                print(error)
-                break
-            }
-            if let fethchedModels = fethchedModels {
-                if self.segmentedControl.selectedSegmentIndex == 0 {
-                    self.viewModel = MainControllerViewModel(models: fethchedModels, type: .type1)
-                } else {
-                    self.viewModel = MainControllerViewModel(models: fethchedModels, type: .type2)
-                }
-            }
-            self.endLoading()
-        }
-        self.refreshControl.endRefreshing()
-    }*/
     
     private func startLoad() {
         guard !self.isRequestBusy else {
@@ -336,7 +295,7 @@ class MainViewController: BaseViewController {
     //MARK: - Helpers
     
     private func showDetail(for bank: BankRatesModel) {
-        let controller = HeaderDetailViewController()
+        let controller = DetailViewController()
         controller.initWithModel(bank)
         let navController = UINavigationController(rootViewController: controller)
         self.present(navController, animated: true, completion: nil)
@@ -346,7 +305,9 @@ class MainViewController: BaseViewController {
         let convertController = ConvertViewController()
         let navController = UINavigationController(rootViewController: convertController)
         convertController.initWithModels(bank.currency, defaultName: self.headerView.currencyName)
-        convertController.setupModel(image: nil, colors: bank.colors, appStoreLink: bank.appStoreLink)
+        bank.getImage { (image) in
+            convertController.setupModel(image: image, colors: bank.colors, appStoreLink: bank.appStoreLink)
+        }
         self.present(navController, animated: true, completion: nil)
     }
     
