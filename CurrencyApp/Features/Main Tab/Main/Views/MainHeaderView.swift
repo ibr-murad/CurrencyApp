@@ -15,7 +15,7 @@ class MainHeaderView: UIView {
         if self.type == .type1 {
             return Settings.shared.defaultCurrency.rawValue
         }
-         return DefaultCurrency.rub.rawValue
+        return DefaultCurrency.rub.rawValue
     }
     var type: MainDataType = .type1
     

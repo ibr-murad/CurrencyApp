@@ -19,14 +19,6 @@ class SplashViewController: UIViewController {
         return imageView
     }()
 
-    private lazy var centerLabel: UILabel = {
-        var label = UILabel()
-        label.text = "Курс"
-        label.font = .systemFont(ofSize: 24, weight: .medium)
-        label.textColor = .white
-        return label
-    }()
-    
     //MARK: - View life cycle
     
     override func viewDidLoad() {
@@ -46,16 +38,12 @@ class SplashViewController: UIViewController {
             make.center.equalToSuperview()
             make.size.equalTo(100)
         }
-        self.centerLabel.snp.makeConstraints { (make) in
-            make.center.equalToSuperview()
-        }
     }
     
     //MARK: - Setters
     
     private func addSubviews() {
         self.view.addSubview(self.centerImageView)
-        self.view.addSubview(self.centerLabel)
     }
     
     //MARK: - Helpers

@@ -22,17 +22,20 @@ class OnboardingFirstViewController: UIViewController {
     
     private lazy var bigImageView: UIImageView = {
         var imageView = UIImageView()
-        imageView.contentMode = .scaleToFill
+        imageView.contentMode = .scaleAspectFit
         imageView.clipsToBounds = true
         imageView.layer.cornerRadius = 8
-        imageView.backgroundColor = .init(rgb: 0x219653)
+        if #available(iOS 13.0, *) {
+            imageView.layer.cornerCurve = .continuous
+        }
+        imageView.image = UIImage(named: "tmp_screen")
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
     
     private lazy var titleLabel: UILabel = {
         var label = UILabel()
-        label.text = "Somoni - будет показывать вам самый выгодный курс по переводам из России в Таджикистан"
+        label.text = "Сомонӣ - будет показывать вам самый выгодный курс дня. Также самый выгодный курс по переводам из России в Таджикистан"
         label.numberOfLines = 0
         label.font = .systemFont(ofSize: 24, weight: .medium)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -82,7 +85,7 @@ class OnboardingFirstViewController: UIViewController {
         self.bigImageView.snp.makeConstraints { (make) in
             make.top.equalTo(self.stepLabel.snp.bottom).offset(16)
             make.left.right.equalToSuperview().inset(24)
-            make.height.equalTo(350)
+            make.height.equalTo(300)
         }
         self.titleLabel.snp.makeConstraints { (make) in
             make.top.equalTo(self.bigImageView.snp.bottom).offset(20)
