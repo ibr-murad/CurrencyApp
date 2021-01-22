@@ -2,7 +2,7 @@
 //  ColorsModel.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 11/11/20.
+//  Created by Murodjon Ibrohimov on 11/11/20.
 //
 
 import Foundation

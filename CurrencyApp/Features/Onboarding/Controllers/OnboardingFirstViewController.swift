@@ -2,7 +2,7 @@
 //  OnboardingFirstViewController.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer on 10/12/20.
+//  Created by Murodjon Ibrohimovon 10/12/20.
 //
 
 import UIKit

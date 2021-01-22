@@ -2,7 +2,7 @@
 //  DefaultCurrencyViewController.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer on 11/3/20.
+//  Created by Murodjon Ibrohimovon 11/3/20.
 //
 
 import UIKit
@@ -47,6 +47,14 @@ class DefaultCurrencyViewController: UIViewController {
         
         self.addSubviews()
         self.makeConstraints()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        if #available(iOS 11.0, *) {
+            navigationItem.largeTitleDisplayMode = .never
+        }
     }
     
     //MARK: - Constraints

@@ -2,7 +2,7 @@
 //  DetailViewController.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer on 10/13/20.
+//  Created by Murodjon Ibrohimovon 10/13/20.
 //
 
 import UIKit
@@ -28,24 +28,29 @@ class DetailViewController: UIViewController {
         return button
     }()
     
+    private lazy var dismissBarButton: UIBarButtonItem = {
+        var button = UIBarButtonItem(
+            image: UIImage(named: "close"), style: .plain,
+            target: self, action: #selector(self.dismissButtonTapped))
+        button.tintColor = .white
+        return button
+    }()
+    
     private lazy var logoConteinerView: UIView = {
         var view = UIView()
         view.clipsToBounds = true
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
     private lazy var logoView: UIView = {
         var view = UIView()
         view.clipsToBounds = false
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
     private lazy var logoImageView: UIImageView = {
         var imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFill
-        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.contentMode = .scaleAspectFit
         return imageView
     }()
     
@@ -54,22 +59,19 @@ class DetailViewController: UIViewController {
         label.textAlignment = .left
         label.font = .systemFont(ofSize: 17, weight: .semibold)
         label.textColor = .white
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     private lazy var topContainerView: UIView = {
         var view = UIView()
         view.clipsToBounds = true
-        view.translatesAutoresizingMaskIntoConstraints = false
         view.tag = 1
         return view
     }()
     
     private lazy var topView: DetailTopView = {
         var view = DetailTopView()
-        view.convertButton.addTarget(self, action: #selector(self.convertButtonTapped(_:)), for: .touchUpInside)
-        view.translatesAutoresizingMaskIntoConstraints = false
+        view.convertButton.addTarget(self, action: #selector(self.convertButtonTapped), for: .touchUpInside)
         return view
     }()
     
@@ -79,7 +81,6 @@ class DetailViewController: UIViewController {
         label.textColor = .white
         label.textAlignment = .center
         label.font = .systemFont(ofSize: 14, weight: .regular)
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
 
@@ -136,7 +137,6 @@ class DetailViewController: UIViewController {
             make.top.right.bottom.equalToSuperview()
             make.left.equalTo(self.logoImageView.snp.right).offset(8)
         }
-        
         self.topContainerView.snp.makeConstraints { (make) in
             make.top.left.right.equalToSuperview()
         }
@@ -181,12 +181,17 @@ class DetailViewController: UIViewController {
         self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
         self.navigationController?.navigationBar.isTranslucent = true
         self.navigationItem.rightBarButtonItem = self.shareBarButton
+        self.navigationItem.leftBarButtonItem = self.dismissBarButton
         if #available(iOS 11.0, *) {
             self.navigationItem.largeTitleDisplayMode = .never
         }
     }
     
     //MARK: - Actions
+    
+    @objc private func dismissButtonTapped(_ sender: UIButton) {
+        self.dismiss(animated: true, completion: nil)
+    }
     
     @objc private func shareBarButtonTapped(_ sender: UIButton) {
         let renderer = UIGraphicsImageRenderer(size: self.view.bounds.size)

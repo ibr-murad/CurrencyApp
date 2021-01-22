@@ -2,7 +2,7 @@
 //  MainViewController.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer on 10/7/20.
+//  Created by Murodjon Ibrohimovon 10/7/20.
 //
 
 import UIKit
@@ -85,16 +85,10 @@ class MainViewController: BaseViewController {
     
     private lazy var refreshControl: UIRefreshControl = {
         var refresh = UIRefreshControl()
-        refresh.tintColor = .orange
+        refresh.tintColor = UIColor(hex: "#158C62")
         refresh.addTarget(self, action: #selector(self.refreshControlValueChanged), for: .valueChanged)
         refresh.translatesAutoresizingMaskIntoConstraints = false
         return refresh
-    }()
-    
-    private lazy var containerView: UIView = {
-        var view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
     }()
     
     //MARK: - View life cycle
@@ -114,13 +108,17 @@ class MainViewController: BaseViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        self.setHiddenSttengsButton(false)
+        if #available(iOS 11.0, *) {
+            navigationItem.largeTitleDisplayMode = .always
+        }
+        
+        self.setHiddenSttingsButton(false)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
-        self.setHiddenSttengsButton(true)
+        self.setHiddenSttingsButton(true)
     }
     
     
@@ -171,7 +169,7 @@ class MainViewController: BaseViewController {
             name: .defaultCurrencyUpdated, object: nil)
     }
     
-    private func setHiddenSttengsButton(_ value: Bool) {
+    private func setHiddenSttingsButton(_ value: Bool) {
         self.settingsButton.isHidden = value
         self.settingsButton.isEnabled = !value
     }
@@ -234,8 +232,8 @@ class MainViewController: BaseViewController {
     private func fetchData() {
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .seconds(1)) {
             let url: URLPath = self.segmentedControl.selectedSegmentIndex == 0 ? .npcr_bank_rates : .c2c_bank_rates
-            Network.shared.testRequest { [weak self] (response: Result<[BankRatesModel], NetworkError>) in
-            //Network.shared.request(url: url) { [weak self] (response: Result<[BankRatesModel], NetworkError>) in
+            //Network.shared.testRequest { [weak self] (response: Result<[BankRatesModel], NetworkError>) in
+            Network.shared.request(url: url) { [weak self] (response: Result<[BankRatesModel], NetworkError>) in
                 guard let self = self else { return }
                 switch response {
                 case .success(let models):
@@ -362,7 +360,7 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
             let viewModel = self.viewModel.banks[indexPath.row]
             (cell as? MainTableViewCell)?.type = self.viewModel.type
             (cell as? MainTableViewCell)?.initCell(model: viewModel)
-            (cell as? MainTableViewCell)?.deteailSelected = { [weak self] id in
+            (cell as? MainTableViewCell)?.deteailSelected = { [weak self] in
                 self?.showActionSheet(forCellAt: indexPath)
             }
         }

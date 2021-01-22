@@ -1,13 +1,13 @@
 //
-//  ExtendedCurrencyView.swift
+//  ExtendedCurrencyItemView.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 11/12/20.
+//  Created by Murodjon Ibrohimov on 11/12/20.
 //
 
 import UIKit
 
-class ExtendedCurrencyView: UIView {
+class ExtendedCurrencyItemView: UIView {
     
     //MARK: - Public variables
     
@@ -17,31 +17,32 @@ class ExtendedCurrencyView: UIView {
     
     private lazy var currencyLabel: UILabel = {
         var label = UILabel()
-        label.text = "Валюта"
+        label.text = "1 RUB"
+        label.font = .systemFont(ofSize: 20, weight: .bold)
         label.textAlignment = .center
-        label.textColor = UIColor.white.withAlphaComponent(0.8)
-        label.font = .systemFont(ofSize: 14, weight: .medium)
+        label.numberOfLines = 1
+        label.textColor = .white
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     private lazy var buyLabel: UILabel = {
         var label = UILabel()
-        label.text = "Покупка"
-        
+        label.text = "0.1350"
+        label.font = .systemFont(ofSize: 20, weight: .bold)
         label.textAlignment = .center
-        label.textColor = UIColor.white.withAlphaComponent(0.8)
-        label.font = .systemFont(ofSize: 14, weight: .medium)
+        label.numberOfLines = 1
+        label.textColor = .white
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-    
     private lazy var sellLabel: UILabel = {
         var label = UILabel()
-        label.text = "Продажа"
+        label.text = "0.1350"
+        label.font = .systemFont(ofSize: 20, weight: .bold)
         label.textAlignment = .center
-        label.textColor = UIColor.white.withAlphaComponent(0.8)
-        label.font = .systemFont(ofSize: 14, weight: .medium)
+        label.numberOfLines = 1
+        label.textColor = .white
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -53,24 +54,20 @@ class ExtendedCurrencyView: UIView {
         return view
     }()
     
-    private lazy var firstItemView: ExtendedCurrencyItemView = {
-        var view = ExtendedCurrencyItemView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
-    
-    private lazy var secondItemView: ExtendedCurrencyItemView = {
-        var view = ExtendedCurrencyItemView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
-    
-    private lazy var thirdItemView: ExtendedCurrencyItemView = {
-        var view = ExtendedCurrencyItemView()
+    private lazy var arrorwImageContainerView: UIView = {
+        var view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
 
+    private lazy var arrorwImageView: UIImageView = {
+        var imageView = UIImageView()
+        imageView.contentMode = .center
+        imageView.image = UIImage(named: "arrow")
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
     //MARK: - Initialization
     
     override init(frame: CGRect) {
@@ -85,16 +82,10 @@ class ExtendedCurrencyView: UIView {
         self.addSubviews()
     }
     
-    func initView(_ models: [CurrencyModel]) {
-        if models.count >= 3 {
-            self.firstItemView.initView(models[0])
-            self.secondItemView.initView(models[1])
-            self.thirdItemView.initView(models[2])
-        } else if models.count <= 2 {
-            self.firstItemView.initView(models[0])
-            self.secondItemView.isHidden = true
-            self.thirdItemView.isHidden = true
-        }
+    func initView(_ model: CurrencyModel) {
+        self.currencyLabel.text = "1 " + model.name
+        self.buyLabel.text = model.buy
+        self.sellLabel.text = model.sell
         self.setNeedsUpdateConstraints()
     }
     
@@ -115,23 +106,20 @@ class ExtendedCurrencyView: UIView {
             make.width.equalTo(UIScreen.main.bounds.width * 0.33)
         }
         self.lineView.snp.updateConstraints { (make) in
-            make.top.equalTo(self.currencyLabel.snp.bottom).offset(24)
-            make.left.right.equalToSuperview()
+            make.top.equalTo(self.sellLabel.snp.bottom).offset(24)
+            make.left.right.bottom.equalToSuperview()
             make.height.equalTo(1)
         }
-        self.firstItemView.snp.updateConstraints { (make) in
-            make.top.equalTo(self.lineView.snp.bottom).offset(24)
-            make.left.right.equalToSuperview()
+        /*self.arrorwImageContainerView.snp.remakeConstraints { (make) in
+            make.left.equalTo(self.firstItem.snp.right)
+            make.right.equalTo(self.secondItem.snp.left)
+            make.bottom.equalToSuperview()
         }
-        self.secondItemView.snp.updateConstraints { (make) in
-            make.top.equalTo(self.firstItemView.snp.bottom).offset(24)
-            make.left.right.equalToSuperview()
-        }
-        self.thirdItemView.snp.updateConstraints { (make) in
-            make.top.equalTo(self.secondItemView.snp.bottom).offset(24)
-            make.left.right.bottom.equalToSuperview()
-        }
-        
+        self.arrorwImageView.snp.remakeConstraints { (make) in
+            make.top.bottom.equalToSuperview()
+            make.centerX.equalToSuperview()
+            make.size.equalTo(CGSize(width: 28, height: 22))
+        }*/
         super.updateConstraints()
     }
     
@@ -142,9 +130,6 @@ class ExtendedCurrencyView: UIView {
         self.addSubview(self.buyLabel)
         self.addSubview(self.sellLabel)
         self.addSubview(self.lineView)
-        self.addSubview(self.firstItemView)
-        self.addSubview(self.secondItemView)
-        self.addSubview(self.thirdItemView)
     }
     
 }

@@ -2,7 +2,7 @@
 //  CurrencyModeViewController.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 11/3/20.
+//  Created by Murodjon Ibrohimov on 11/3/20.
 //
 
 import UIKit
@@ -15,11 +15,7 @@ class CurrencyModeViewController: UIViewController {
     
     //MARK: - GUI variables
     
-    private lazy var currencyModeView: CurrencyModeView = {
-        var view = CurrencyModeView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
+    private lazy var currencyModeView: CurrencyModeView = CurrencyModeView()
     
     private lazy var saveButton: UIButton = {
         var button = UIButton(type: .system)
@@ -29,7 +25,6 @@ class CurrencyModeViewController: UIViewController {
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 17, weight: .medium)
         button.addTarget(self, action: #selector(self.saveButtonTapped), for: .touchUpInside)
-        button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
@@ -39,10 +34,18 @@ class CurrencyModeViewController: UIViewController {
         super.viewDidLoad()
         
         self.view.backgroundColor = .white
-        self.navigationItem.title = "Режим"
+        self.navigationItem.title = "Опция показа курсов валют"
         
         self.addSubviews()
         self.makeConstraints()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        if #available(iOS 11.0, *) {
+            navigationItem.largeTitleDisplayMode = .never
+        }
     }
     
     //MARK: - Constraints

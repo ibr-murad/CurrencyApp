@@ -2,7 +2,7 @@
 //  ConvertView.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 11/5/20.
+//  Created by Murodjon Ibrohimov on 11/5/20.
 //
 
 import UIKit
@@ -61,7 +61,6 @@ class ConvertView: UIView {
         field.translatesAutoresizingMaskIntoConstraints = false
         return field
     }()
-    
     
     lazy var keyboardToolBar: UIToolbar = {
         var bar = UIToolbar()
@@ -191,7 +190,7 @@ class ConvertView: UIView {
     
     lazy var descriptionLabel: UILabel = {
         var label = UILabel()
-        label.text = "Курс конвертациия от Хумо на 11.12.2020"
+        label.text = "Последний раз обновлено " + UserDefaults.standard.lastUpdated
         label.font = .systemFont(ofSize: 14, weight: .regular)
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -205,7 +204,10 @@ class ConvertView: UIView {
         button.setTitle("Скачать приложение банка", for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.setImage(UIImage(named: "share"), for: .normal)
-        button.imageEdgeInsets.right = 16
+        button.imageEdgeInsets.right = 20
+        if #available(iOS 13.0, *) {
+            button.layer.cornerCurve = .continuous
+        }
         button.titleLabel?.font = .systemFont(ofSize: 14, weight: .regular)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.layer.cornerRadius = 16
@@ -301,7 +303,7 @@ class ConvertView: UIView {
         }
         self.descriptionView.snp.updateConstraints { (make) in
             make.left.right.equalToSuperview()
-            make.bottom.equalToSuperview().inset(50)
+            make.bottom.equalToSuperview().inset(80)
         }
         self.descriptionLabel.snp.updateConstraints { (make) in
             make.top.equalToSuperview()
@@ -381,7 +383,6 @@ class ConvertView: UIView {
     }
     
 }
-
 
 //MARK: - UITextFieldDelegate
 

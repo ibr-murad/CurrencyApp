@@ -2,7 +2,7 @@
 //  CurrenciesViewController.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer on 10/28/20.
+//  Created by Murodjon Ibrohimovon 10/28/20.
 //
 
 import UIKit
@@ -29,7 +29,6 @@ class CurrenciesViewController: UIViewController {
             self.tableView.isScrollEnabled = newValue
         }
     }
-    
     
     enum ViewState {
         case open

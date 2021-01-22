@@ -2,7 +2,7 @@
 //  NBTTableViewFooterView.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer on 11/2/20.
+//  Created by Murodjon Ibrohimovon 11/2/20.
 //
 
 import UIKit

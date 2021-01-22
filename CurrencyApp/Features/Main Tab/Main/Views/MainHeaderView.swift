@@ -2,7 +2,7 @@
 //  MainTopView.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer on 10/7/20.
+//  Created by Murodjon Ibrohimovon 10/7/20.
 //
 
 import UIKit
@@ -30,7 +30,6 @@ class MainHeaderView: UIView {
         view.backgroundColor = .white
         view.layer.cornerRadius = 16
         view.clipsToBounds = true
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
@@ -39,16 +38,13 @@ class MainHeaderView: UIView {
         view.isWindlessable = true
         view.clipsToBounds = false
         view.layer.cornerRadius = 6
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
     private lazy var logoImageView: UIImageView = {
         var imageView = UIImageView()
-        imageView.layer.cornerRadius = 6
-        imageView.contentMode = .scaleAspectFill
-        imageView.backgroundColor = .clear
-        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.contentMode = .scaleAspectFit
+        //imageView.backgroundColor = .white
         return imageView
     }()
     
@@ -66,14 +62,12 @@ class MainHeaderView: UIView {
         button.setImage(UIImage(named: "share"), for: .normal)
         button.tintColor = .white
         button.tag = 33
-        button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
 
     private lazy var lineView1: UIView = {
         var view = UIView()
         view.backgroundColor = .init(rgb: 0xFFFFFF, alpha: 0.12)
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
@@ -82,7 +76,6 @@ class MainHeaderView: UIView {
         view.isWindlessable = true
         view.clipsToBounds = false
         view.layer.cornerRadius = 6
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
@@ -92,14 +85,12 @@ class MainHeaderView: UIView {
         label.textColor = .white
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.textAlignment = .left
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     private lazy var lineView2: UIView = {
         var view = UIView()
         view.backgroundColor = .init(rgb: 0xFFFFFF, alpha: 0.12)
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
@@ -110,14 +101,12 @@ class MainHeaderView: UIView {
         view.layer.cornerRadius = 12
         view.setColor([UIColor.white.withAlphaComponent(0.8), .white])
         view.setFont(.systemFont(ofSize: 20, weight: .bold))
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
     private lazy var lineView3: UIView = {
         var view = UIView()
         view.backgroundColor = .init(rgb: 0xFFFFFF, alpha: 0.12)
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
@@ -130,7 +119,6 @@ class MainHeaderView: UIView {
         button.backgroundColor = .init(rgb: 0xFFFFFF, alpha: 0.20)
         button.layer.cornerRadius = 24
         button.clipsToBounds = true
-        button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
@@ -157,8 +145,9 @@ class MainHeaderView: UIView {
         }
         self.logoNameLabel.text = model.name
         self.updateGradientAndShadowColor(model.colors)
-        model.getImage { (image) in
-            //self.logoImageView.image = image
+        
+        model.getImage { (image) in            
+            self.logoImageView.image = image
         }
         self.setNeedsUpdateConstraints()
     }

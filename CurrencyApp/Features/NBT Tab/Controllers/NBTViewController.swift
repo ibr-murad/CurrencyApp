@@ -2,7 +2,7 @@
 //  ThirdTabViewController.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer on 11/2/20.
+//  Created by Murodjon Ibrohimovon 11/2/20.
 //
 
 import UIKit
@@ -120,6 +120,7 @@ class NBTViewController: BaseViewController {
         let convertController = ConvertViewController()
         let navController = UINavigationController(rootViewController: convertController)
         convertController.initWithModels(self.data)
+        convertController.setupModel(image: nil)
         self.present(navController, animated: true, completion: nil)
     }
     

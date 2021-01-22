@@ -2,7 +2,7 @@
 //  ThirdTabTableViewCell.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer on 11/2/20.
+//  Created by Murodjon Ibrohimovon 11/2/20.
 //
 
 import UIKit
@@ -101,8 +101,8 @@ class NBTTableViewCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
 
-        self.selectionStyle = .none
         self.addSubviews()
+        self.selectionStyle = .none
         self.setNeedsUpdateConstraints()
     }
     

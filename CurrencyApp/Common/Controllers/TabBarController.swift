@@ -2,7 +2,7 @@
 //  TabBarController.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer on 10/8/20.
+//  Created by Murodjon Ibrohimovon 10/8/20.
 //
 
 import UIKit
@@ -15,7 +15,7 @@ class TabBarController: UITabBarController {
         let controller = MainViewController()
         controller.tabBarItem = UITabBarItem(
             title: "Выгодный курс",
-            image: UIImage(named: "share"), tag: 0)
+            image: UIImage(named: "tab-1"), tag: 0)
         return controller
     }()
 
@@ -23,7 +23,7 @@ class TabBarController: UITabBarController {
         let controller = NBTViewController()
         controller.tabBarItem = UITabBarItem(
             title: "Курсы от НБТ",
-            image: UIImage(named: "share"), tag: 1)
+            image: UIImage(named: "tab-2"), tag: 1)
         return controller
     }()
 
@@ -40,7 +40,7 @@ class TabBarController: UITabBarController {
     // MARK: - Setters
     
     private func tabBarStyle() {
-        self.tabBar.tintColor = .black
+        self.tabBar.tintColor = UIColor(hex: "#158C62")
         self.tabBar.barTintColor = .white
     }
     

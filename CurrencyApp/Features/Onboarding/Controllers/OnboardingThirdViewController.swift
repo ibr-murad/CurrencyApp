@@ -2,7 +2,7 @@
 //  OnboardingThirdViewController.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer on 10/12/20.
+//  Created by Murodjon Ibrohimovon 10/12/20.
 //
 
 import UIKit
@@ -114,6 +114,10 @@ class OnboardingThirdViewController: UIViewController {
     @objc private func doneButtonTapped(_ sender: UIButton) {
         AppDelegate.shared.rootViewController.showTabBarController()
         UserDefaults.standard.set(true, forKey: "doesUserPassInitialSetup")
+        if let mode = self.currencyModeView.selectedMode {
+            Settings.shared.mode = mode
+            NotificationCenter.default.post(name: .modeUpdated, object: nil)
+        }
     }
     
 }

@@ -2,7 +2,7 @@
 //  String+Ex.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 11/13/20.
+//  Created by Murodjon Ibrohimov on 11/13/20.
 //
 
 import Foundation

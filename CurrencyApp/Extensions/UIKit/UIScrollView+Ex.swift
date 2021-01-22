@@ -2,7 +2,7 @@
 //  UIScrollView+Ex.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 11/3/20.
+//  Created by Murodjon Ibrohimov on 11/3/20.
 //
 
 import UIKit

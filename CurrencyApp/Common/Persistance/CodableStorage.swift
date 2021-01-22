@@ -2,7 +2,7 @@
 //  CodableStorage.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 11/9/20.
+//  Created by Murodjon Ibrohimov on 11/9/20.
 //
 
 import Foundation
@@ -19,7 +19,6 @@ protocol WritableStorage {
     func save(value: Data, for key: String) throws
     func save(value: Data, for key: String, handler: @escaping Handler<Data>)
 }
-
 
 class CodableStorage {
     

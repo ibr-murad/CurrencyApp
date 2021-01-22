@@ -2,7 +2,7 @@
 //  BankRatesModel.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer on 10/20/20.
+//  Created by Murodjon Ibrohimovon 10/20/20.
 //
 
 import UIKit
@@ -30,7 +30,7 @@ struct BankRatesModel: Codable {
             KingfisherManager.shared.retrieveImage(with: url) { (result) in
                 switch result {
                 case .success(let value):
-                    if self.isColored {
+                    if !self.isColored {
                         completion(value.image.with(color: .white))
                     } else {
                         completion(value.image)

@@ -2,7 +2,7 @@
 //  OnboardingSecondViewController.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer on 10/12/20.
+//  Created by Murodjon Ibrohimovon 10/12/20.
 //
 
 import UIKit
@@ -117,6 +117,10 @@ class OnboardingSecondViewController: UIViewController {
     @objc private func continueButtonTapped() {
         if let parent = self.parent as? OnboardingPageViewController {
             parent.setViewControllers([parent.pages[2]], direction: .forward, animated: true, completion: nil)
+            if let currency = self.currencyView.selectedCurrency {
+                Settings.shared.defaultCurrency = currency
+                NotificationCenter.default.post(name: .defaultCurrencyUpdated, object: nil)
+            }
         }
     }
     

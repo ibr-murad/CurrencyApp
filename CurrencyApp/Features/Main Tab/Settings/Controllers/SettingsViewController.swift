@@ -2,10 +2,11 @@
 //  SettingsViewController.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer on 10/12/20.
+//  Created by Murodjon Ibrohimovon 10/12/20.
 //
 
 import UIKit
+import StoreKit
 
 class SettingsViewController: BaseViewController {
     
@@ -19,9 +20,7 @@ class SettingsViewController: BaseViewController {
                        "Уведомления",
                        "Оцените приложение"]),
         .init(header: "ПОДДЕРЖКА",
-              titles: ["Написать в Telegram",
-                       "Написать в WhatsApp",
-                       "Написать в Viber"])]
+              titles: ["Написать в Telegram"])]
     
     //MARK: - GUI variables
     
@@ -40,15 +39,6 @@ class SettingsViewController: BaseViewController {
         return tableView
     }()
     
-    private lazy var notificationsSwitch: UISwitch = {
-        var switchh = UISwitch()
-        switchh.addTarget(
-            self, action: #selector(self.notificationSwithValueChange),
-            for: .valueChanged)
-        switchh.translatesAutoresizingMaskIntoConstraints = false
-        return switchh
-    }()
-    
     //MARK: - View life cycle
     
     override func viewDidLoad() {
@@ -63,9 +53,12 @@ class SettingsViewController: BaseViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
+        if #available(iOS 11.0, *) {
+            navigationItem.largeTitleDisplayMode = .never
+        }
         self.tableView.reloadData()
     }
-
+    
     //MARK: - Constraints
     
     private func makeConstraints() {
@@ -78,10 +71,6 @@ class SettingsViewController: BaseViewController {
     
     private func addSubviews() {
         self.view.addSubview(self.tableView)
-    }
-    
-    @objc private func notificationSwithValueChange(_ sender: UISwitch) {
-        print(sender.isOn)
     }
     
 }
@@ -106,11 +95,14 @@ extension SettingsViewController: UITableViewDelegate, UITableViewDataSource {
         let cell = indexPath.section == 0 ?
             self.cellForFirstSection(cellForRowAt: indexPath) :
             self.cellForSecondSection(cellForRowAt: indexPath)
-        cell.selectionStyle = .none
+        let selectedBackgroungView = UIView()
+        selectedBackgroungView.backgroundColor = UIColor(red: 251.0 / 255.0, green: 251.0 / 255.0, blue: 251.0 / 255.0, alpha: 1.0)
+        cell.selectedBackgroundView = selectedBackgroungView
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
         if indexPath.section == 0 {
             if indexPath.row == 0 {
                 let modeVC =  CurrencyModeViewController()
@@ -119,19 +111,23 @@ extension SettingsViewController: UITableViewDelegate, UITableViewDataSource {
                 let currencyVC =  DefaultCurrencyViewController()
                 Interface.shared.pushVC(vc: currencyVC)
             } else if indexPath.row == 2 {
-                self.notificationsSwitch.setOn(!self.notificationsSwitch.isOn, animated: true)
-                self.notificationSwithValueChange(self.notificationsSwitch)
+                if let appSettings = NSURL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(appSettings as URL)
+                }
             } else if indexPath.row == 3 {
-                print("call in app review")
+                if #available(iOS 10.3, *) {
+                    SKStoreReviewController.requestReview()
+                }
             }
             
         } else if indexPath.section == 1 {
             if indexPath.row == 0 {
-                //link to telegram
-            } else if indexPath.row == 1 {
-                //link to whatsapp
-            } else if indexPath.row == 2 {
-                //link to viber
+                let botURL = URL.init(string: "tg://resolve?domain=rublerusd")
+
+                if UIApplication.shared.canOpenURL(botURL!) {
+                    UIApplication.shared.open(botURL!)
+                }
+
             }
         }
     }
@@ -148,8 +144,7 @@ extension SettingsViewController: UITableViewDelegate, UITableViewDataSource {
         } else if indexPath.row == 1 {
             cell.detailTextLabel?.text = Settings.shared.defaultCurrency.rawValue
         } else if indexPath.row == 2 {
-            cell.accessoryType = .none
-            cell.accessoryView = self.notificationsSwitch
+            cell.accessoryType = .disclosureIndicator
         } else if indexPath.row == 3 {
             cell.accessoryType = .none
         }
@@ -163,12 +158,17 @@ extension SettingsViewController: UITableViewDelegate, UITableViewDataSource {
         cell.textLabel?.text = titles[indexPath.row]
         if indexPath.row == 0 {
             cell.textLabel?.textColor = .init(rgb: 0x007AFF)
-        } else if indexPath.row == 1 {
-            cell.textLabel?.textColor = .init(rgb: 0x128C7E)
-        } else if indexPath.row == 2 {
-            cell.textLabel?.textColor = .purple
+            cell.imageView?.image = UIImage(named: "telegram")
         }
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        nil
+    }
+    
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        0
     }
     
 }

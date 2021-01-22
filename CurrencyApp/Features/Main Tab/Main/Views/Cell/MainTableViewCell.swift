@@ -2,7 +2,7 @@
 //  MainTableViewCell.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer on 10/8/20.
+//  Created by Murodjon Ibrohimovon 10/8/20.
 //
 
 import UIKit
@@ -19,7 +19,7 @@ class MainTableViewCell: UITableViewCell {
         }
          return DefaultCurrency.rub.rawValue
     }
-    var deteailSelected: ((String) -> Void)?
+    var deteailSelected: (() -> Void)?
     var type: MainDataType = .type1
     
     //MARK: - Private variables
@@ -33,7 +33,6 @@ class MainTableViewCell: UITableViewCell {
         var view = UIView()
         view.backgroundColor = .white
         view.layer.cornerRadius = 12
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
@@ -42,15 +41,13 @@ class MainTableViewCell: UITableViewCell {
         view.isWindlessable = true
         view.clipsToBounds = false
         view.layer.cornerRadius = 6
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
     private lazy var logoImageView: UIImageView = {
         var imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFill
+        imageView.contentMode = .scaleAspectFit
         imageView.image = UIImage(named: "humo")
-        imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
     
@@ -59,14 +56,12 @@ class MainTableViewCell: UITableViewCell {
         label.textAlignment = .left
         label.font = .systemFont(ofSize: 17, weight: .semibold)
         label.textColor = Colors.textBlackMain.color()
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
 
     private lazy var lineView: UIView = {
         var view = UIView()
         view.backgroundColor = .init(rgb: 0xF2F2F2)
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
@@ -76,7 +71,6 @@ class MainTableViewCell: UITableViewCell {
         view.clipsToBounds = false
         view.layer.cornerRadius = 12
         view.setFont(.systemFont(ofSize: 20, weight: .medium))
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
@@ -85,7 +79,6 @@ class MainTableViewCell: UITableViewCell {
         button.setImage(UIImage(named: "detail"), for: .normal)
         button.tintColor = Colors.textBlackMiddle.color()
         button.addTarget(self, action: #selector(self.detailButtonTapped), for: .touchUpInside)
-        button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
@@ -187,7 +180,7 @@ class MainTableViewCell: UITableViewCell {
     //MARK: - Actions
     
     @objc private func detailButtonTapped() {
-        self.deteailSelected?("")
+        self.deteailSelected?()
     }
     
 }

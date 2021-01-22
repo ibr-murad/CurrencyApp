@@ -2,7 +2,7 @@
 //  RoundedView.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer on 10/13/20.
+//  Created by Murodjon Ibrohimovon 10/13/20.
 //
 
 import UIKit

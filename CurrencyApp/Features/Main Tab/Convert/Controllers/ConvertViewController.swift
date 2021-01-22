@@ -2,7 +2,7 @@
 //  ConvertViewController.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer on 10/8/20.
+//  Created by Murodjon Ibrohimovon 10/8/20.
 //
 
 import UIKit
@@ -100,6 +100,9 @@ class ConvertViewController: UIViewController {
         self.setupColors(colors)
         self.appStoreLink = appStoreLink
         self.convertView.downloadButton.setImage(image, for: .normal)
+        if appStoreLink.isEmpty {
+            convertView.downloadButton.isHidden = true
+        }
     }
     
     //MARK: - Constraints
@@ -220,13 +223,13 @@ class ConvertViewController: UIViewController {
         if let userInfo = notification.userInfo,
            let nsValue = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue {
             let keyboardFrame = nsValue.cgRectValue
-            self.convertView.descriptionView.transform =
-                CGAffineTransform(translationX: 0, y: -(keyboardFrame.height - 30))
+//            self.convertView.descriptionView.transform =
+//                CGAffineTransform(translationX: 0, y: -(keyboardFrame.height - 30))
         }
     }
 
     @objc func keyboardWillHideNotification(_ notification: NSNotification) {
-        self.convertView.descriptionView.transform = CGAffineTransform.identity
+//        self.convertView.descriptionView.transform = CGAffineTransform.identity
     }
         
     //MARK: - Helpers

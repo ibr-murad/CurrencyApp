@@ -2,7 +2,7 @@
 //  DiskStorage.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer  on 11/9/20.
+//  Created by Murodjon Ibrohimov on 11/9/20.
 //
 
 import Foundation

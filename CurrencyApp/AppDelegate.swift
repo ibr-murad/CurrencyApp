@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  CurrencyApp
 //
-//  Created by Humo Programmer on 10/7/20.
+//  Created by Murodjon Ibrohimovon 10/7/20.
 //
 
 import UIKit
@@ -17,8 +17,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
-        self.window = UIWindow(frame: UIScreen.main.bounds)
-        guard let window = self.window else { return false }
+        window = UIWindow(frame: UIScreen.main.bounds)
+        guard let window = window else { return false }
         
         if #available(iOS 13.0, *) {
             window.overrideUserInterfaceStyle = .light
@@ -27,7 +27,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window.makeKeyAndVisible()
         
         FirebaseApp.configure()
-        self.registForNotifications(application)
+        registForNotifications(application)
         
         return true
     }
@@ -46,21 +46,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 extension AppDelegate: UNUserNotificationCenterDelegate {
     
     func registForNotifications(_ application: UIApplication) {
-        if #available(iOS 10.0, *) {
-            // For iOS 10 display notification (sent via APNS)
-            UNUserNotificationCenter.current().delegate = self
-            
-            let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
-            UNUserNotificationCenter.current().requestAuthorization(
-                options: authOptions,
-                completionHandler: {granted, _ in
-                    print("-----------Granted: \(granted)")
-                })
-        } else {
-            let settings: UIUserNotificationSettings =
-                UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil)
-            application.registerUserNotificationSettings(settings)
-        }
+        UNUserNotificationCenter.current().delegate = self
+        
+        let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
+        UNUserNotificationCenter.current().requestAuthorization(
+            options: authOptions,
+            completionHandler: {granted, _ in
+                print("-----------Granted: \(granted)")
+            })
         
         application.registerForRemoteNotifications()
     }
